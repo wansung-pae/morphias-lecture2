@@ -90,6 +90,98 @@ class FeaturedContent extends HTMLElement {
     }
 }
 
+class LottoGenerator extends HTMLElement {
+    constructor() {
+        super();
+        const shadow = this.attachShadow({ mode: 'open' });
+        const template = document.createElement('template');
+        template.innerHTML = `
+            <style>
+                :host {
+                    display: block;
+                    padding: 2rem;
+                    text-align: center;
+                }
+                .lotto-card {
+                    background-color: #2a2a2a;
+                    border-radius: 1rem;
+                    padding: 1.5rem;
+                    box-shadow: 0 10px 20px var(--shadow-color), 0 0 10px var(--secondary-color);
+                    transition: transform 0.3s, box-shadow 0.3s;
+                }
+                .lotto-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 15px 30px var(--shadow-color), 0 0 20px var(--primary-color);
+                }
+                h3 {
+                    color: var(--primary-color);
+                    text-shadow: 0 0 10px var(--primary-color);
+                }
+                .numbers {
+                    display: flex;
+                    justify-content: center;
+                    gap: 1rem;
+                    margin: 1rem 0;
+                }
+                .number {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    background-color: var(--primary-color);
+                    color: var(--text-color);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-size: 1.2rem;
+                    font-weight: bold;
+                    box-shadow: 0 0 10px var(--primary-color);
+                }
+                button {
+                    background-color: var(--primary-color);
+                    color: var(--text-color);
+                    border: none;
+                    padding: 0.8rem 1.5rem;
+                    border-radius: 0.5rem;
+                    cursor: pointer;
+                    transition: background-color 0.3s, box-shadow 0.3s;
+                    box-shadow: 0 0 10px var(--primary-color);
+                }
+                button:hover {
+                    background-color: var(--secondary-color);
+                    box-shadow: 0 0 20px var(--secondary-color);
+                }
+            </style>
+            <div class="lotto-card">
+                <h3>Lotto Number Generator</h3>
+                <div class="numbers"></div>
+                <button>Generate Numbers</button>
+            </div>
+        `;
+        shadow.appendChild(template.content.cloneNode(true));
+
+        this.shadowRoot.querySelector('button').addEventListener('click', () => {
+            this.generateNumbers();
+        });
+    }
+
+    generateNumbers() {
+        const numbersContainer = this.shadowRoot.querySelector('.numbers');
+        numbersContainer.innerHTML = '';
+        const numbers = new Set();
+        while(numbers.size < 6) {
+            numbers.add(Math.floor(Math.random() * 45) + 1);
+        }
+        
+        for (const number of Array.from(numbers).sort((a, b) => a - b)) {
+            const numberElement = document.createElement('div');
+            numberElement.classList.add('number');
+            numberElement.textContent = number;
+            numbersContainer.appendChild(numberElement);
+        }
+    }
+}
+
 customElements.define('main-header', MainHeader);
 customElements.define('hero-section', HeroSection);
 customElements.define('featured-content', FeaturedContent);
+customElements.define('lotto-generator', LottoGenerator);
