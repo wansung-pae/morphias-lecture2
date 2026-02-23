@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>0MORPHIAS0 | Intro, Lotto & Tarot</title>
+    <title>0MORPHIAS0 | Intro, Lotto, Tarrot & Sound</title>
     <style>
-        /* 기본 스타일 및 기존 스타일 유지 */
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Josefin+Sans:wght@100;200&display=swap');
+
         * {
-            margin: 0; padding: 0; box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: 'Pretendard', 'Helvetica Neue', sans-serif;
             -webkit-font-smoothing: antialiased;
         }
@@ -16,166 +19,1023 @@
             background: url('homepage1.jpg') no-repeat center center fixed;
             background-size: cover;
             color: #ffffff;
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; padding: 20px; overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
         }
 
         body::before {
-            content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.45); z-index: -1;
+            content: "";
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: -1;
+        }
+
+        body.sound-active {
+            background: none;
+            display: block;
+            padding: 0;
+            align-items: unset;
+            justify-content: unset;
+        }
+        body.sound-active::before {
+            display: none;
         }
 
         .main-container {
-            width: 100%; max-width: 500px;
+            width: 100%;
+            max-width: 500px;
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            padding: 30px 20px; text-align: center; position: relative; overflow: hidden;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.sound-active .main-container {
+            display: none;
         }
 
         .main-container.tarrot-bg-active::after {
-            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: url("2.jpg") no-repeat center center; /* 경로 수정됨 */
-            background-size: cover; opacity: 0.3; z-index: -1;
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url("eye.jpg") no-repeat center center;
+            background-size: cover;
+            opacity: 0.3;
+            z-index: -1;
         }
 
-        h1 { font-size: 1.6rem; letter-spacing: 6px; margin-bottom: 25px; font-weight: 300; text-transform: uppercase; }
+        h1 {
+            font-size: 1.6rem;
+            letter-spacing: 6px;
+            margin-bottom: 25px;
+            font-weight: 300;
+            text-transform: uppercase;
+        }
 
-        /* 탭 메뉴 */
-        .tab-menu { display: flex; justify-content: center; margin-bottom: 30px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px; }
-        .tab-button { background: none; border: none; color: rgba(255, 255, 255, 0.5); font-size: 0.8rem; padding: 10px 15px; cursor: pointer; transition: 0.3s; position: relative; letter-spacing: 2px; }
+        .tab-menu {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.78rem;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+            letter-spacing: 2px;
+        }
+
         .tab-button.active { color: #fff; font-weight: 600; }
-        .tab-button.active::after { content: ''; position: absolute; bottom: -11px; left: 50%; transform: translateX(-50%); width: 60%; height: 2px; background-color: #00bcd4; }
+        .tab-button.active::after {
+            content: ''; position: absolute; bottom: -11px; left: 50%;
+            transform: translateX(-50%); width: 60%; height: 2px; background-color: #00bcd4;
+        }
 
-        /* Intro Section */
-        .profile-container { width: 110px; height: 110px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.2); margin: 0 auto 25px; overflow: hidden; background: #000; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .profile-container {
+            width: 110px; height: 110px;
+            border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.2);
+            margin: 0 auto 25px; overflow: hidden; background: #000;
+        }
         .profile-video { width: 100%; height: 100%; object-fit: cover; }
         h2 { font-size: 1.25rem; margin-bottom: 15px; font-weight: 500; }
         p.description { font-size: 0.95rem; color: rgba(255, 255, 255, 0.8); margin-bottom: 35px; line-height: 1.7; word-break: keep-all; }
 
-        .link-button { display: block; text-decoration: none; color: #fff; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1); padding: 16px; margin-bottom: 12px; border-radius: 12px; transition: all 0.3s ease; font-size: 0.9rem; letter-spacing: 1px; cursor: pointer; }
+        .link-button {
+            display: block; text-decoration: none; color: #fff;
+            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px; margin-bottom: 12px; border-radius: 12px;
+            transition: all 0.3s ease; font-size: 0.9rem; letter-spacing: 1px; cursor: pointer;
+        }
         .link-button:hover { background: #00bcd4; color: #000; transform: translateY(-3px); }
 
-        .sub-button-container { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; padding: 0 10px; }
+        .sub-button-container {
+            max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out;
+            margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; padding: 0 10px;
+        }
         .sub-button-container.open { max-height: 400px; margin-bottom: 20px; }
-        .sub-link { display: block; text-decoration: none; color: rgba(255, 255, 255, 0.7); background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 12px; border-radius: 8px; font-size: 0.85rem; transition: 0.3s; text-align: left; }
+        .sub-link {
+            display: block; text-decoration: none; color: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px; border-radius: 8px; font-size: 0.85rem; transition: 0.3s; text-align: left;
+        }
+        .sub-link:hover { background: rgba(0, 188, 212, 0.2); color: #00bcd4; border-color: #00bcd4; }
 
-        /* Lotto & Tarot (기존 스타일 유지) */
         .lotto-row { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
-        .ball { width: 36px; height: 36px; line-height: 36px; border-radius: 50%; font-size: 0.9rem; font-weight: 700; color: #222; background: #eee; display: flex; justify-content: center; align-items: center; }
-        .ball-1-10 { background: #fbc400; } .ball-11-20 { background: #69c8f2; } .ball-21-30 { background: #ff7272; } .ball-31-40 { background: #aaaaaa; } .ball-41-45 { background: #b0d840; }
-        .generate-btn { background: #00bcd4; color: #000; border: none; padding: 16px 32px; font-size: 1rem; font-weight: 700; border-radius: 50px; cursor: pointer; margin-top: 10px; transition: 0.3s; }
-        
-        .footer { margin-top: 50px; font-size: 0.7rem; color: rgba(255, 255, 255, 0.4); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .ball { width: 36px; height: 36px; border-radius: 50%; font-size: 0.9rem; font-weight: 700; color: #222; display: flex; justify-content: center; align-items: center; }
+        .ball-1-10  { background: #fbc400; }
+        .ball-11-20 { background: #69c8f2; }
+        .ball-21-30 { background: #ff7272; }
+        .ball-31-40 { background: #aaaaaa; }
+        .ball-41-45 { background: #b0d840; }
+        .generate-btn {
+            background: #00bcd4; color: #000; border: none;
+            padding: 16px 32px; font-size: 1rem; font-weight: 700;
+            border-radius: 50px; cursor: pointer; margin-top: 10px; transition: 0.3s;
+        }
+        .generate-btn:hover { transform: scale(1.05); }
+
+        .tarot-container {
+            height: 420px; position: relative;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-start;
+        }
+        #card-orbit {
+            position: relative; width: 100%; height: 300px;
+            perspective: 1200px; display: flex;
+            justify-content: center; align-items: center;
+        }
+        .orbit-card {
+            position: absolute; width: 80px; height: 130px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #000 100%);
+            border: 1px solid rgba(0, 188, 212, 0.4);
+            border-radius: 8px; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            display: flex; justify-content: center; align-items: center; font-size: 1.2rem;
+            transition: border 0.3s;
+        }
+        .orbit-card::after { content: "✨"; opacity: 0.4; }
+        .orbit-card:hover  { border-color: #00bcd4; }
+        @keyframes orbitRotate {
+            from { transform: rotateY(0deg) translateX(130px) rotateY(0deg); }
+            to   { transform: rotateY(360deg) translateX(130px) rotateY(-360deg); }
+        }
+        .tarot-card-wrapper {
+            perspective: 1000px; width: 200px; height: 340px;
+            cursor: default; position: absolute; top: 0;
+        }
+        .tarot-card-inner {
+            width: 100%; height: 100%;
+            position: relative; transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.4,0.2,0.2,1);
+        }
+        .tarot-card-inner.is-flipped { transform: rotateY(180deg); }
+        .tarot-front, .tarot-back {
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden; border-radius: 14px;
+            border: 1px solid rgba(0,188,212,0.35);
+        }
+        .tarot-front {
+            background: linear-gradient(135deg, #0d0d0d, #1a1a2e);
+            display: flex; justify-content: center; align-items: center; font-size: 2rem;
+        }
+        .tarot-front::after { content: "✦"; color: rgba(0,188,212,0.6); }
+        .tarot-back {
+            background: linear-gradient(160deg, #0a0a1a, #0d1b2a);
+            transform: rotateY(180deg);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-start;
+            padding: 14px 12px; gap: 8px; overflow: hidden;
+        }
+        .card-img-container {
+            width: 100%; flex: 1; overflow: hidden;
+            border-radius: 8px; background: rgba(0,0,0,0.4);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .card-img-container img { width: 100%; height: 100%; object-fit: cover; }
+        #tarot-name { font-size: 0.75rem; letter-spacing: 1.5px; color: #00bcd4; font-weight: 600; text-align: center; }
+        #tarot-desc { font-size: 0.72rem; color: rgba(255,255,255,0.7); text-align: center; line-height: 1.5; word-break: keep-all; }
+
+        .footer {
+            margin-top: 30px; font-size: 0.7rem;
+            color: rgba(255,255,255,0.2); letter-spacing: 2px;
+        }
+
+        #sound-fullscreen {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            width: 100vw;
+            height: 100vh;
+            background: #010d1a;
+            font-family: 'Cormorant Garamond', serif;
+            cursor: none;
+        }
+        #sound-fullscreen.active { display: block; }
+
+        #sound-back-btn {
+            position: absolute; top: 1.5rem; left: 1.5rem; z-index: 30;
+            background: rgba(3,18,36,0.55); border: 1px solid rgba(60,150,210,0.28);
+            color: rgba(160,220,245,0.7); font-family: 'Josefin Sans', sans-serif;
+            font-weight: 100; font-size: 0.55rem; letter-spacing: 0.4em;
+            text-transform: uppercase; padding: 0.5rem 1.1rem;
+            cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(6px);
+            pointer-events: all;
+        }
+        #sound-back-btn:hover { border-color: rgba(80,200,240,0.5); color: rgba(220,245,255,0.95); }
+
+        #snd-universe { position: relative; width: 100%; height: 100%; }
+        #snd-bg-canvas, #snd-lake-canvas, #snd-drop-canvas,
+        #snd-mist-canvas, #snd-firefly-canvas, #snd-vis-canvas {
+            position: absolute; inset: 0;
+        }
+        #snd-bg-canvas      { z-index: 0; }
+        #snd-lake-canvas    { z-index: 1; }
+        #snd-drop-canvas    { z-index: 2; }
+        #snd-mist-canvas    { z-index: 3; pointer-events: none; }
+        #snd-firefly-canvas { z-index: 4; pointer-events: none; }
+        #snd-vis-canvas     { z-index: 5; pointer-events: none; }
+        .snd-vignette {
+            position: absolute; inset: 0; z-index: 6; pointer-events: none;
+            background:
+                radial-gradient(ellipse 70% 55% at 50% 38%, transparent 20%, rgba(1,13,26,0.45) 65%, rgba(1,13,26,0.92) 100%),
+                linear-gradient(to bottom, rgba(1,13,26,0.5) 0%, transparent 18%, transparent 75%, rgba(1,13,26,0.7) 100%);
+        }
+
+        .snd-hud {
+            position: absolute; top: 0; left: 0; right: 0; z-index: 12;
+            display: flex; align-items: flex-start; justify-content: space-between;
+            padding: 1.8rem 2.2rem; pointer-events: none;
+        }
+        .snd-title-label { font-family:'Josefin Sans',sans-serif; font-weight:100; font-size:0.58rem; letter-spacing:0.5em; text-transform:uppercase; color:rgba(160,220,245,0.4); }
+        .snd-title-main  { font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:300; font-size:1.4rem; letter-spacing:0.12em; color:rgba(200,240,255,0.7); text-shadow:0 0 28px rgba(60,160,220,0.4); margin-top:0.15rem; }
+        .snd-energy-block { text-align:right; display:flex; flex-direction:column; gap:0.2rem; }
+        .snd-energy-label { font-family:'Josefin Sans',sans-serif; font-weight:100; font-size:0.55rem; letter-spacing:0.4em; text-transform:uppercase; color:rgba(100,200,240,0.35); }
+        #snd-energy-val   { font-family:'Josefin Sans',sans-serif; font-weight:100; font-size:1.6rem; letter-spacing:0.05em; color:rgba(180,235,255,0.55); }
+
+        .snd-controls {
+            position: absolute; bottom: 0; left: 0; right: 0; z-index: 12;
+            display: flex; flex-direction: column; align-items: center;
+            padding-bottom: 2.2rem; gap: 1rem;
+        }
+        .snd-progress-wrap { width:min(420px,88vw); height:1px; background:rgba(60,140,200,0.12); cursor:pointer; pointer-events:all; }
+        .snd-progress-fill { height:100%; width:0%; background:linear-gradient(to right,rgba(20,80,140,0.8),rgba(80,200,240,0.9)); box-shadow:0 0 6px rgba(80,200,240,0.35); transition:width 0.4s linear; }
+        .snd-btn-row { display:flex; align-items:center; gap:1.2rem; pointer-events:all; }
+        .snd-btn {
+            background:rgba(3,18,36,0.5); border:1px solid rgba(60,150,210,0.22);
+            color:rgba(160,220,245,0.65); font-family:'Josefin Sans',sans-serif; font-weight:100;
+            font-size:0.58rem; letter-spacing:0.35em; text-transform:uppercase;
+            padding:0.55rem 1.4rem; cursor:pointer; transition:all 0.35s ease; backdrop-filter:blur(6px);
+        }
+        .snd-btn:hover { border-color:rgba(80,200,240,0.45); color:rgba(220,245,255,0.9); box-shadow:0 0 14px rgba(60,180,230,0.12); }
+        .snd-btn.primary { border-color:rgba(60,170,220,0.35); padding:0.65rem 2.2rem; background:rgba(10,40,70,0.35); }
+        .snd-track-name { font-family:'Josefin Sans',sans-serif; font-weight:100; font-size:0.58rem; letter-spacing:0.28em; color:rgba(120,190,230,0.35); text-transform:uppercase; max-width:340px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+        #snd-upload-zone {
+            position:absolute; inset:0; z-index:22; display:none; align-items:center; justify-content:center;
+            background:radial-gradient(ellipse at 50% 50%, rgba(3,18,40,0.75) 0%, rgba(1,10,22,0.96) 100%);
+            backdrop-filter:blur(3px); transition:opacity 0.9s ease;
+        }
+        #snd-upload-zone.visible { display:flex; opacity: 1; }
+        .snd-upload-inner { display:flex; flex-direction:column; align-items:center; gap:1.6rem; }
+        .snd-ripple-icon { width:130px; height:70px; position:relative; display:flex; align-items:center; justify-content:center; }
+        .snd-ripple-icon svg { width:100%; height:100%; }
+        .ri-ring { fill:none; stroke:rgba(60,160,220,0.2); animation:riPulse 3s ease-in-out infinite; transform-origin:center; }
+        .ri-ring:nth-child(2){ animation-delay:0.6s; }
+        .ri-ring:nth-child(3){ animation-delay:1.2s; }
+        @keyframes riPulse { 0%,100%{opacity:0.5;transform:scale(1);}50%{opacity:0.2;transform:scale(1.06);} }
+        .ri-dot { position:absolute; width:8px; height:8px; border-radius:50%; background:rgba(140,220,255,0.75); box-shadow:0 0 12px rgba(80,200,250,0.8),0 0 24px rgba(60,180,240,0.3); animation:riPulse 3s ease-in-out infinite; }
+        .snd-upload-title { font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:300; font-size:1.9rem; letter-spacing:0.07em; color:rgba(200,240,255,0.8); text-shadow:0 0 35px rgba(60,160,220,0.4); }
+        .snd-upload-sub   { font-family:'Josefin Sans',sans-serif; font-weight:100; font-size:0.58rem; letter-spacing:0.42em; color:rgba(80,180,230,0.4); text-transform:uppercase; }
+
+        #snd-cursor      { display:none; position:fixed; width:6px; height:6px; border-radius:50%; background:rgba(140,220,255,0.9); pointer-events:none; z-index:9999; transform:translate(-50%,-50%); box-shadow:0 0 8px rgba(80,200,255,0.7),0 0 16px rgba(60,180,240,0.3); }
+        #snd-cursor-ring { display:none; position:fixed; width:24px; height:24px; border-radius:50%; border:1px solid rgba(80,190,240,0.3); pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:all 0.12s ease; }
+        body.sound-active #snd-cursor,
+        body.sound-active #snd-cursor-ring { display: block; }
+
+        #snd-file-input { display:none; }
     </style>
 </head>
 <body>
 
-    <div class="main-container" id="main-container">
-        <h1>0MORPHIAS0</h1>
+<audio id="snd-player" src="homepage2.mp4" crossOrigin="anonymous" loop style="display:none;"></audio>
 
-        <div class="tab-menu">
-            <button class="tab-button active" onclick="openTab(event, 'intro')">INTRO</button>
-            <button class="tab-button" onclick="openTab(event, 'lotto')">LOTTO</button>
-            <button class="tab-button" onclick="openTab(event, 'visualizer')">VISUALIZER</button>
-        </div>
+<div id="snd-cursor"></div>
+<div id="snd-cursor-ring"></div>
 
-        <div id="intro" class="tab-content active">
-            <div class="profile-container">
-                <video class="profile-video" autoplay loop muted playsinline>
-                    <source src="homepage2.mp4" type="video/mp4">
-                </video>
+<div id="sound-fullscreen">
+    <div id="snd-universe">
+        <canvas id="snd-bg-canvas"></canvas>
+        <canvas id="snd-lake-canvas"></canvas>
+        <canvas id="snd-drop-canvas"></canvas>
+        <canvas id="snd-mist-canvas"></canvas>
+        <canvas id="snd-firefly-canvas"></canvas>
+        <canvas id="snd-vis-canvas"></canvas>
+        <div class="snd-vignette"></div>
+
+        <button id="sound-back-btn" onclick="closeSoundView()">← BACK</button>
+
+        <div class="snd-hud">
+            <div>
+                <div class="snd-title-label">Celestial Rain · Visualizer</div>
+                <div class="snd-title-main">湖の雨</div>
             </div>
-            <h2>Creative Vision & Archive</h2>
-            <p class="description">
-                낯선 영감이 현실이 되는 곳. 0MORPHIAS0가 큐레이션한<br>
-                미학적 조각들을 따라 당신의 세계를 무한히 확장해보세요.
-            </p>
-            <a href="https://www.instagram.com/0morphias0" class="link-button" target="_blank">INSTAGRAM</a>
-            <div class="link-button" onclick="toggleWorks()">FICTION & WORKS</div>
-            <div id="works-container" class="sub-button-container">
-                <a href="We're from the stars!.pdf" class="sub-link" target="_blank">✨ We're from the stars!</a>
-                <a href="Mani and Red Car.pdf" class="sub-link" target="_blank">🚗 Mani and Red Car</a>
-                <a href="a girl who has become a tree.pdf" class="sub-link" target="_blank">🌳 A girl who has become a tree</a>
+            <div class="snd-energy-block">
+                <div class="snd-energy-label">intensity</div>
+                <div id="snd-energy-val">—</div>
             </div>
-            <div class="link-button" onclick="openTabDirect('visualizer')">AUDIO VISUALIZER</div>
         </div>
 
-        <div id="lotto" class="tab-content">
-            <div id="lotto-display" style="min-height: 220px; display: flex; flex-direction: column; justify-content: center;">
-                <p style="color: rgba(255,255,255,0.5);">GENERATE 버튼을 눌러 행운을 확인하세요.</p>
+        <div id="snd-upload-zone">
+            <div class="snd-upload-inner">
+                <div class="snd-ripple-icon">
+                    <svg viewBox="0 0 130 60" xmlns="http://www.w3.org/2000/svg">
+                        <ellipse class="ri-ring" cx="65" cy="30" rx="60" ry="24" stroke-width="1"/>
+                        <ellipse class="ri-ring" cx="65" cy="30" rx="40" ry="16" stroke-width="0.8"/>
+                        <ellipse class="ri-ring" cx="65" cy="30" rx="20" ry="8"  stroke-width="0.6"/>
+                    </svg>
+                    <div class="ri-dot"></div>
+                </div>
+                <div class="snd-upload-title">Drop your music here</div>
+                <div class="snd-upload-sub">mp3 · wav · ogg · flac</div>
+                <button class="snd-btn primary" onclick="document.getElementById('snd-file-input').click()">Choose File</button>
             </div>
-            <button class="generate-btn" onclick="generateLotto()">GENERATE 5 SETS</button>
+            <input type="file" id="snd-file-input" accept="audio/*">
         </div>
 
-        <div id="visualizer" class="tab-content">
-<iframe src="audio-visualizer_rain-2.html" style="width: 100%; height: 450px; border: 0;"></iframe>
+        <div class="snd-controls">
+            <div class="snd-progress-wrap" id="snd-progress-wrap">
+                <div class="snd-progress-fill" id="snd-progress-fill"></div>
+            </div>
+            <div class="snd-btn-row">
+                <button class="snd-btn" id="snd-restart-btn">↺ Restart</button>
+                <button class="snd-btn primary" id="snd-play-btn">▷ Play</button>
+                <button class="snd-btn" id="snd-upload-btn">⊕ New Track</button>
+            </div>
+            <div class="snd-track-name" id="snd-track-name">Default Ambience</div>
         </div>
+    </div>
+</div>
 
-        <div class="footer">
-            © <span id="current-year"></span> 0MORPHIAS0. ALL RIGHTS RESERVED.
+<div class="main-container" id="main-container">
+    <h1>0MORPHIAS0</h1>
+
+    <nav class="tab-menu">
+        <button class="tab-button active" onclick="openTab(event, 'intro')">INTRO</button>
+        <button class="tab-button" onclick="openTab(event, 'lotto')">LOTTO</button>
+        <button class="tab-button" onclick="openTab(event, 'tarrot')">TARROT</button>
+        <button class="tab-button" onclick="openSoundView()">SOUND</button>
+    </nav>
+
+    <div id="intro" class="tab-content active">
+        <div class="profile-container">
+            <video class="profile-video" autoplay loop muted playsinline>
+                <source src="homepage2.mp4" type="video/mp4">
+            </video>
+        </div>
+        <h2>Creative Vision & Archive</h2>
+        <p class="description">
+            낯선 영감이 현실이 되는 곳. 0MORPHIAS0가 큐레이션한<br>
+            미학적 조각들을 따라 당신의 세계를 무한히 확장해보세요.
+        </p>
+        <a href="https://www.instagram.com/0morphias0" class="link-button" target="_blank">INSTAGRAM</a>
+        <div class="link-button" onclick="toggleWorks()">FICTION & WORKS</div>
+        <div id="works-container" class="sub-button-container">
+            <a href="We're from the stars!.pdf" class="sub-link" target="_blank">✨ We're from the stars!</a>
+            <a href="Mani and Red Car.pdf" class="sub-link" target="_blank">🚗 Mani and Red Car</a>
+            <a href="a girl who has become a tree.pdf" class="sub-link" target="_blank">🌳 A girl who has become a tree</a>
+        </div>
+        <a href="#" class="link-button">CONTACT</a>
+    </div>
+
+    <div id="lotto" class="tab-content">
+        <div id="lotto-display" style="min-height: 220px; display: flex; flex-direction: column; justify-content: center;">
+            <p style="color: rgba(255,255,255,0.5);">GENERATE 버튼을 눌러 행운을 확인하세요.</p>
+        </div>
+        <button class="generate-btn" onclick="generateLotto()">GENERATE 5 SETS</button>
+    </div>
+
+    <div id="tarrot" class="tab-content">
+        <h2 style="margin-bottom: 5px;">오늘의 메시지</h2>
+        <p id="tarot-guide" style="font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-bottom: 25px;">회전하는 카드 중 하나를 선택하세요.</p>
+
+        <div class="tarot-container">
+            <div id="card-orbit"></div>
+
+            <div id="selected-card-view" class="tarot-card-wrapper" style="display:none;">
+                <div class="tarot-card-inner" id="tarot-card">
+                    <div class="tarot-front"></div>
+                    <div class="tarot-back">
+                        <div class="card-img-container">
+                            <img id="tarot-img" src="" alt="Card Image" onerror="this.src='https://via.placeholder.com/200x300?text=No+Image'">
+                        </div>
+                        <span id="tarot-name">CARD NAME</span>
+                        <p id="tarot-desc"></p>
+                    </div>
+                </div>
+            </div>
+
+            <button id="shuffle-btn" class="generate-btn"
+                style="padding: 12px 25px; font-size: 0.85rem; margin-top: 350px; display:none;"
+                onclick="resetTarot()">SHUFFLE AGAIN</button>
         </div>
     </div>
 
-    <script>
-        document.getElementById('current-year').textContent = new Date().getFullYear();
+    <div class="footer">
+        © <span id="current-year"></span> 0MORPHIAS0. ALL RIGHTS RESERVED.
+    </div>
+</div>
 
-        function toggleWorks() {
-            document.getElementById('works-container').classList.toggle('open');
+<script>
+document.getElementById('current-year').textContent = new Date().getFullYear();
+
+function toggleWorks() {
+    document.getElementById('works-container').classList.toggle('open');
+}
+
+function openTab(evt, tabName) {
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+    const mainContainer = document.getElementById('main-container');
+    if (tabName === 'tarrot') {
+        mainContainer.classList.add('tarrot-bg-active');
+        resetTarot();
+    } else {
+        mainContainer.classList.remove('tarrot-bg-active');
+    }
+    document.getElementById(tabName).classList.add('active');
+    evt.currentTarget.classList.add('active');
+}
+
+let sndInitialized = false;
+
+function openSoundView() {
+    document.body.classList.add('sound-active');
+    document.getElementById('sound-fullscreen').classList.add('active');
+    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+    if (!sndInitialized) {
+        sndInitialized = true;
+        initSoundEngine();
+    } else {
+        sndResize();
+    }
+}
+
+function closeSoundView() {
+    document.body.classList.remove('sound-active');
+    document.getElementById('sound-fullscreen').classList.remove('active');
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('intro').classList.add('active');
+    document.querySelectorAll('.tab-button')[0].classList.add('active');
+    if (sndAudioEl) { sndAudioEl.pause(); sndIsPlaying = false; document.getElementById('snd-play-btn').textContent = '▷ Play'; }
+}
+
+function generateLotto() {
+    const display = document.getElementById('lotto-display');
+    display.innerHTML = '';
+    for (let i = 0; i < 5; i++) {
+        let nums = [];
+        while (nums.length < 6) {
+            let r = Math.floor(Math.random() * 45) + 1;
+            if (!nums.includes(r)) nums.push(r);
         }
+        nums.sort((a, b) => a - b);
+        const row = document.createElement('div');
+        row.className = 'lotto-row';
+        nums.forEach(n => {
+            const ball = document.createElement('div');
+            ball.className = 'ball';
+            ball.innerText = n;
+            if      (n <= 10) ball.classList.add('ball-1-10');
+            else if (n <= 20) ball.classList.add('ball-11-20');
+            else if (n <= 30) ball.classList.add('ball-21-30');
+            else if (n <= 40) ball.classList.add('ball-31-40');
+            else              ball.classList.add('ball-41-45');
+            row.appendChild(ball);
+        });
+        display.appendChild(row);
+    }
+}
 
-        function openTab(evt, tabName) {
-            const contents = document.getElementsByClassName('tab-content');
-            for (let content of contents) content.classList.remove('active');
-            const buttons = document.getElementsByClassName('tab-button');
-            for (let btn of buttons) btn.classList.remove('active');
-            
-            const mainContainer = document.getElementById('main-container');
-            if(tabName === 'visualizer') {
-                mainContainer.classList.add('tarrot-bg-active');
-            } else {
-                mainContainer.classList.remove('tarrot-bg-active');
+const majorArcana = [
+    { name: "0. The Fool",           desc: "새로운 시작과 순수한 모험의 기운이 있습니다." },
+    { name: "1. The Magician",       desc: "창의적인 재능을 발휘할 완벽한 시기입니다." },
+    { name: "2. The High Priestess", desc: "직관과 내면의 목소리에 집중해 보세요." },
+    { name: "3. The Empress",        desc: "풍요로움과 창조적인 결실이 예상됩니다." },
+    { name: "4. The Emperor",        desc: "질서와 리더십을 통해 상황을 통제하세요." },
+    { name: "5. The Hierophant",     desc: "현명한 조언이나 전통의 지혜가 필요합니다." },
+    { name: "6. The Lovers",         desc: "조화로운 관계와 신중한 선택의 기로입니다." },
+    { name: "7. The Chariot",        desc: "목표를 향해 강력하게 전진할 때입니다." },
+    { name: "8. Strength",           desc: "인내와 부드러운 힘이 어려움을 극복합니다." },
+    { name: "9. The Hermit",         desc: "자신을 돌아보며 내면의 답을 찾아보세요." },
+    { name: "10. Wheel of Fortune",  desc: "행운의 흐름이 당신에게 다가오고 있습니다." },
+    { name: "11. Justice",           desc: "공정하고 객관적인 판단이 필요한 시점입니다." },
+    { name: "12. The Hanged Man",    desc: "관점을 바꾸면 새로운 기회가 보일 것입니다." },
+    { name: "13. Death",             desc: "변화를 위해 과거를 놓아줄 시간입니다." },
+    { name: "14. Temperance",        desc: "절제와 균형을 통해 안정을 되찾으세요." },
+    { name: "15. The Devil",         desc: "집착에서 벗어나 자유를 찾을 용기가 필요합니다." },
+    { name: "16. The Tower",         desc: "갑작스러운 변화가 성장의 밑거름이 됩니다." },
+    { name: "17. The Star",          desc: "희망과 영감이 당신의 길을 비추고 있습니다." },
+    { name: "18. The Moon",          desc: "불안함 속에서도 당신의 직관을 신뢰하세요." },
+    { name: "19. The Sun",           desc: "밝은 에너지와 확실한 성공이 기다립니다." },
+    { name: "20. Judgement",         desc: "명확한 결단과 보상의 시간이 다가왔습니다." },
+    { name: "21. The World",         desc: "하나의 완성된 단계에 도달했습니다. 축하합니다!" }
+];
+
+let isSelected = false;
+
+function initTarotOrbit() {
+    const orbitContainer  = document.getElementById('card-orbit');
+    const selectedView    = document.getElementById('selected-card-view');
+    const shuffleBtn      = document.getElementById('shuffle-btn');
+    const guide           = document.getElementById('tarot-guide');
+
+    orbitContainer.innerHTML  = '';
+    orbitContainer.style.display = 'flex';
+    selectedView.style.display   = 'none';
+    shuffleBtn.style.display     = 'none';
+    guide.innerText = "회전하는 카드 중 하나를 선택하세요.";
+    isSelected = false;
+
+    for (let i = 0; i < 22; i++) {
+        const card  = document.createElement('div');
+        card.className = 'orbit-card';
+        const delay = (i * (6 / 22)) * -1;
+        card.style.animation      = 'orbitRotate 6s linear infinite';
+        card.style.animationDelay = `${delay}s`;
+        card.style.zIndex         = Math.floor(Math.random() * 22);
+        card.onclick = () => pickTarotCard();
+        orbitContainer.appendChild(card);
+    }
+}
+
+function pickTarotCard() {
+    if (isSelected) return;
+    isSelected = true;
+
+    const orbitContainer = document.getElementById('card-orbit');
+    const selectedView   = document.getElementById('selected-card-view');
+    const cardInner      = document.getElementById('tarot-card');
+    const shuffleBtn     = document.getElementById('shuffle-btn');
+    const guide          = document.getElementById('tarot-guide');
+
+    orbitContainer.style.display = 'none';
+    selectedView.style.display   = 'block';
+    cardInner.classList.remove('is-flipped');
+    guide.innerText = "당신의 운명을 확인하세요.";
+
+    const randomIndex = Math.floor(Math.random() * majorArcana.length);
+    const cardData    = majorArcana[randomIndex];
+
+    document.getElementById('tarot-img').src       = `Tarrot/${randomIndex}.png`;
+    document.getElementById('tarot-name').innerText = cardData.name;
+    document.getElementById('tarot-desc').innerText = cardData.desc;
+
+    setTimeout(() => {
+        cardInner.classList.add('is-flipped');
+        shuffleBtn.style.display = 'block';
+    }, 150);
+}
+
+function resetTarot() { initTarotOrbit(); }
+
+window.onload = () => { initTarotOrbit(); };
+
+var sndAudioEl = document.getElementById('snd-player');
+var sndIsPlaying = false;
+
+function initSoundEngine() {
+    const sndCursor     = document.getElementById('snd-cursor');
+    const sndCursorRing = document.getElementById('snd-cursor-ring');
+    document.getElementById('sound-fullscreen').addEventListener('mousemove', e => {
+        sndCursor.style.left     = e.clientX + 'px';
+        sndCursor.style.top      = e.clientY + 'px';
+        setTimeout(() => { sndCursorRing.style.left = e.clientX + 'px'; sndCursorRing.style.top = e.clientY + 'px'; }, 55);
+    });
+
+    const bgC = document.getElementById('snd-bg-canvas'),      bgX = bgC.getContext('2d');
+    const lkC = document.getElementById('snd-lake-canvas'),    lkX = lkC.getContext('2d');
+    const dpC = document.getElementById('snd-drop-canvas'),    dpX = dpC.getContext('2d');
+    const msC = document.getElementById('snd-mist-canvas'),    msX = msC.getContext('2d');
+    const ffC = document.getElementById('snd-firefly-canvas'), ffX = ffC.getContext('2d');
+    const vsC = document.getElementById('snd-vis-canvas'),     vsX = vsC.getContext('2d');
+    let W, H, offBg;
+
+    function sndResize() {
+        W = window.innerWidth; H = window.innerHeight;
+        [bgC,lkC,dpC,msC,ffC,vsC].forEach(c => { c.width = W; c.height = H; });
+        buildBackground(); initStars(); initMist(); initFireflies();
+    }
+    window.addEventListener('resize', () => { if (sndInitialized) sndResize(); });
+
+    function buildBackground() {
+        offBg = document.createElement('canvas');
+        offBg.width = W; offBg.height = H;
+        const bx = offBg.getContext('2d');
+        const sky = bx.createLinearGradient(0,0,0,H);
+        sky.addColorStop(0,    '#010d1c');
+        sky.addColorStop(0.32, '#021426');
+        sky.addColorStop(0.58, '#031a2e');
+        sky.addColorStop(1,    '#010810');
+        bx.fillStyle = sky; bx.fillRect(0,0,W,H);
+        const lkG = bx.createRadialGradient(W*0.48,H*0.40,0,W*0.5,H*0.48,W*0.62);
+        lkG.addColorStop(0,   'rgba(28,105,175,0.30)');
+        lkG.addColorStop(0.18,'rgba(16, 75,140,0.20)');
+        lkG.addColorStop(0.5, 'rgba( 8, 40, 90,0.10)');
+        lkG.addColorStop(1,   'rgba( 1, 10, 22,0.00)');
+        bx.fillStyle = lkG; bx.fillRect(0,0,W,H);
+        const tG = bx.createRadialGradient(W*0.56,H*0.34,0,W*0.56,H*0.40,W*0.28);
+        tG.addColorStop(0,'rgba(18,135,155,0.13)'); tG.addColorStop(1,'rgba(18,135,155,0)');
+        bx.fillStyle = tG; bx.fillRect(0,0,W,H);
+        const id = bx.getImageData(0,0,W,H); const d = id.data;
+        for (let i=0;i<d.length;i+=4){ const n=(Math.random()-0.5)*9; d[i]=Math.max(0,Math.min(255,d[i]+n)); d[i+1]=Math.max(0,Math.min(255,d[i+1]+n)); d[i+2]=Math.max(0,Math.min(255,d[i+2]+n)); }
+        bx.putImageData(id,0,0);
+    }
+
+    let stars = [];
+    function initStars() {
+        stars = Array.from({length:200}, () => ({ x:Math.random()*W, y:Math.random()*H*0.52, r:Math.random()*1.1+0.15, phase:Math.random()*Math.PI*2, speed:Math.random()*0.005+0.002, bright:Math.random()>0.92 }));
+    }
+    function drawStars(beat, energy) {
+        bgX.clearRect(0,0,W,H); bgX.drawImage(offBg,0,0);
+        stars.forEach(s => {
+            s.phase += s.speed;
+            let a = Math.sin(s.phase)*0.35+0.45;
+            if (beat) a = Math.min(1, a*1.45);
+            if (s.bright) {
+                const hg = bgX.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*5);
+                hg.addColorStop(0,`rgba(170,230,255,${a*0.35})`); hg.addColorStop(1,'rgba(170,230,255,0)');
+                bgX.fillStyle = hg; bgX.beginPath(); bgX.arc(s.x,s.y,s.r*5,0,Math.PI*2); bgX.fill();
             }
+            bgX.beginPath(); bgX.arc(s.x,s.y,s.r+(beat?0.25:0),0,Math.PI*2);
+            bgX.fillStyle = s.bright ? `rgba(205,242,255,${a})` : `rgba(130,195,228,${a*0.65})`;
+            bgX.fill();
+        });
+    }
 
-            document.getElementById(tabName).classList.add('active');
-            if(evt) evt.currentTarget.classList.add('active');
+    function yToScale(y) { const t=Math.max(0,Math.min(1,(y-H*0.15)/(H*0.85))); return 0.14+t*0.58; }
+
+    let ripples = [];
+    let pendingBeatRipples=0, beatRippleTimer=0;
+    function spawnRipple(x,y,strength,isBeat){
+        const scale = yToScale(y);
+        const beatMult  = isBeat ? 1.8 : 1.0;
+        const colorMode = isBeat ? 'beat' : (Math.random()>0.55 ? 'teal' : 'blue');
+        ripples.push({ x, y, r:1, maxR:(85+Math.random()*115+strength*70)*beatMult*(0.55+scale*0.85), speed:(0.85+Math.random()*0.7+strength*0.45)*(isBeat?1.6:1.0), alpha:(0.5+strength*0.22)*(isBeat?1.4:1.0), scale, rings:Math.floor(3+strength*2.2+Math.random()*3+(isBeat?3:0)), ringGap:8+Math.random()*8, colorMode, wobble:Math.random()*0.06+(isBeat?0.04:0), isBeat });
+    }
+    let lakeHue=0, lakeColorPhase=0;
+    const LAKE_COLORS=[[20,80,200],[60,20,180],[10,130,90],[140,200,240],[5,5,30],[80,40,220]];
+
+    function drawLake(){
+        lkX.clearRect(0,0,W,H);
+        lakeColorPhase += 0.0018;
+        const ci = Math.floor(lakeColorPhase) % LAKE_COLORS.length;
+        const cn = (ci+1) % LAKE_COLORS.length;
+        const cf = lakeColorPhase - Math.floor(lakeColorPhase);
+        const cr = LAKE_COLORS[ci][0]*(1-cf)+LAKE_COLORS[cn][0]*cf;
+        const cg = LAKE_COLORS[ci][1]*(1-cf)+LAKE_COLORS[cn][1]*cf;
+        const cb = LAKE_COLORS[ci][2]*(1-cf)+LAKE_COLORS[cn][2]*cf;
+        const lakeTop=H*0.35, lakeBot=H*0.85;
+        for(let b=0;b<5;b++){
+            const by=lakeTop+(b/5)*(lakeBot-lakeTop);
+            const bw=W*(0.5+b*0.1);
+            const bh=(lakeBot-lakeTop)*0.22;
+            const phase=lakeColorPhase*0.7+b*1.3;
+            const shimmerX=W*0.5+Math.sin(phase)*W*0.15;
+            const shimmerA=(0.04+Math.sin(phase*1.3+b)*0.025)*(0.4+b*0.12);
+            const sg=lkX.createRadialGradient(shimmerX,by,0,shimmerX,by,bw*0.5);
+            sg.addColorStop(0,`rgba(${cr|0},${cg|0},${cb|0},${shimmerA})`);
+            sg.addColorStop(0.5,`rgba(${cr|0},${cg|0},${cb|0},${shimmerA*0.3})`);
+            sg.addColorStop(1,'rgba(0,0,0,0)');
+            lkX.fillStyle=sg; lkX.beginPath(); lkX.ellipse(shimmerX,by,bw*0.5,bh,0,0,Math.PI*2); lkX.fill();
         }
-
-        function openTabDirect(tabName) {
-            const btn = document.querySelector(`.tab-button[onclick*="'''+tabName+'''"]`);
-            openTab({currentTarget: btn}, tabName);
+        for(let l=0;l<8;l++){
+            const ly=lakeTop+(l/8)*(lakeBot-lakeTop)+Math.sin(lakeColorPhase*0.5+l)*10;
+            const la=0.025+Math.sin(lakeColorPhase+l*0.7)*0.015;
+            const lineR=cr*0.8+40, lineG=cg*0.8+60, lineB=cb*0.9+80;
+            lkX.beginPath(); lkX.moveTo(0,ly); lkX.lineTo(W,ly);
+            lkX.strokeStyle=`rgba(${lineR|0},${lineG|0},${lineB|0},${Math.max(0,la)})`;
+            lkX.lineWidth=0.5+Math.sin(lakeColorPhase*0.8+l)*0.3; lkX.stroke();
         }
-
-        // --- Lotto & Tarot Logic (기존 로직 유지) ---
-        function generateLotto() {
-            const display = document.getElementById('lotto-display');
-            display.innerHTML = ''; 
-            for (let i = 0; i < 5; i++) {
-                let nums = [];
-                while(nums.length < 6) {
-                    let r = Math.floor(Math.random() * 45) + 1;
-                    if(!nums.includes(r)) nums.push(r);
+        for(let i=ripples.length-1;i>=0;i--){
+            const rp=ripples[i]; rp.r+=rp.speed;
+            const progress=rp.r/rp.maxR;
+            if(progress>=1){ripples.splice(i,1);continue;}
+            const fadeIn=Math.min(1,rp.r/14);
+            const baseAlpha=rp.alpha*fadeIn*(1-progress);
+            for(let k=0;k<rp.rings;k++){
+                const kr=rp.r-k*rp.ringGap; if(kr<=0) continue;
+                const rf=Math.pow(1-k/rp.rings,1.6);
+                const a=baseAlpha*rf;
+                let r,g,b;
+                if(rp.colorMode==='beat'){r=cr*0.5+180*(1-progress);g=cg*0.3+160*(1-progress);b=cb*0.7+255*(1-progress);}
+                else if(rp.colorMode==='teal'){r=12+progress*18;g=95+(1-progress)*75;b=148+(1-progress)*52;}
+                else{r=35+(1-progress)*85;g=135+(1-progress)*72;b=208+(1-progress)*38;}
+                lkX.beginPath(); lkX.ellipse(rp.x,rp.y,kr,kr*rp.scale*(1+rp.wobble*Math.sin(kr*0.09)),0,0,Math.PI*2);
+                lkX.strokeStyle=`rgba(${r|0},${g|0},${b|0},${a})`;
+                lkX.lineWidth=Math.max(0.3,(rp.isBeat?2.0:1.3)-k*0.14-progress*0.55); lkX.stroke();
+                if(k===0&&progress<0.22){
+                    lkX.beginPath(); lkX.ellipse(rp.x,rp.y,kr*0.86,kr*rp.scale*0.86,0,0,Math.PI*2);
+                    lkX.strokeStyle=`rgba(215,245,255,${a*(rp.isBeat?0.7:0.48)})`;
+                    lkX.lineWidth=rp.isBeat?0.8:0.45; lkX.stroke();
                 }
-                nums.sort((a, b) => a - b);
-                const row = document.createElement('div');
-                row.className = 'lotto-row';
-                nums.forEach(n => {
-                    const ball = document.createElement('div');
-                    ball.className = 'ball';
-                    ball.innerText = n;
-                    if(n <= 10) ball.classList.add('ball-1-10');
-                    else if(n <= 20) ball.classList.add('ball-11-20');
-                    else if(n <= 30) ball.classList.add('ball-21-30');
-                    else if(n <= 40) ball.classList.add('ball-31-40');
-                    else ball.classList.add('ball-41-45');
-                    row.appendChild(ball);
-                });
-                display.appendChild(row);
+            }
+            if(progress<0.22){
+                const gR=rp.r*(rp.isBeat?3.8:2.8);
+                const glow=lkX.createRadialGradient(rp.x,rp.y,0,rp.x,rp.y,gR);
+                const glowA=rp.isBeat?0.28:0.16;
+                const glowColor=rp.isBeat?`rgba(${cr|0},${Math.min(255,cg+80)|0},255`:`rgba(175,232,255`;
+                glow.addColorStop(0,`${glowColor},${glowA*(1-progress/0.22)})`);
+                glow.addColorStop(1,`${glowColor},0)`);
+                lkX.fillStyle=glow; lkX.beginPath(); lkX.ellipse(rp.x,rp.y,gR,gR*rp.scale,0,0,Math.PI*2); lkX.fill();
             }
         }
-    </script>
+    }
+
+    let drops = [];
+    function spawnDrop(strength, isBeat){
+        const yFrac = Math.random();
+        const yEnd  = H*0.20+yFrac*H*0.68;
+        const xRange= 0.08+yFrac*0.82;
+        const x     = W*(0.5-xRange/2+Math.random()*xRange);
+        const angle = (Math.random()-0.5)*0.16;
+        drops.push({ x, y:Math.random()*H*0.25-55, yEnd, angle, speed:5+Math.random()*5+strength*3+(1-yFrac)*2, alpha:0.50+Math.random()*0.38, len:26+Math.random()*28+strength*10+(isBeat?14:0), width:0.7+Math.random()*0.55+(isBeat?0.4:0), strength, teal:Math.random()>0.72, isBeat:!!isBeat });
+    }
+    function drawDrops(){
+        dpX.clearRect(0,0,W,H);
+        for(let i=drops.length-1;i>=0;i--){
+            const d=drops[i];
+            d.x+=Math.sin(d.angle)*d.speed*0.28;
+            d.y+=d.speed;
+            if(d.y>=d.yEnd){spawnRipple(d.x,d.yEnd,d.strength,d.isBeat);drops.splice(i,1);continue;}
+            const x2=d.x-Math.sin(d.angle)*d.len, y2=d.y-d.len;
+            const lg=dpX.createLinearGradient(x2,y2,d.x,d.y);
+            if(d.teal){lg.addColorStop(0,'rgba(55,195,200,0)');lg.addColorStop(0.65,'rgba(90,215,215,0.13)');lg.addColorStop(1,`rgba(175,245,245,${d.alpha*0.85})`);}
+            else{lg.addColorStop(0,'rgba(190,232,255,0)');lg.addColorStop(0.58,'rgba(210,240,255,0.10)');lg.addColorStop(1,`rgba(235,250,255,${d.alpha})`);}
+            dpX.beginPath(); dpX.moveTo(x2,y2); dpX.lineTo(d.x,d.y);
+            dpX.strokeStyle=lg; dpX.lineWidth=d.width; dpX.lineCap='round'; dpX.stroke();
+            const tipA=d.isBeat?d.alpha*1.4:d.alpha;
+            const tg=dpX.createRadialGradient(d.x,d.y,0,d.x,d.y,4.5+d.strength);
+            tg.addColorStop(0,`rgba(240,252,255,${Math.min(1,tipA)})`);
+            tg.addColorStop(0.35,`rgba(140,215,255,${tipA*0.45})`);
+            tg.addColorStop(1,'rgba(70,170,255,0)');
+            dpX.fillStyle=tg; dpX.beginPath(); dpX.arc(d.x,d.y,4.5+d.strength+(d.isBeat?3:0),0,Math.PI*2); dpX.fill();
+        }
+    }
+
+    let wvPhase=0, wvPhase2=0, bloomPulse=0;
+    function drawWaterViz(freqData, energy, beat){
+        vsX.clearRect(0,0,W,H);
+        wvPhase  += 0.007+energy*0.022;
+        wvPhase2 += 0.004+energy*0.013;
+        if(beat) bloomPulse=1.0;
+        bloomPulse*=0.93;
+        const cx=W*0.5, cy=H*0.41;
+        const bR=160+energy*130+bloomPulse*90;
+        const bA=0.055+energy*0.075+bloomPulse*0.075;
+        const bg2=vsX.createRadialGradient(cx,cy,0,cx,cy,bR);
+        bg2.addColorStop(0,  `rgba(55,155,218,${bA})`);
+        bg2.addColorStop(0.28,`rgba(25,100,175,${bA*0.55})`);
+        bg2.addColorStop(0.68,`rgba( 8, 50,120,${bA*0.18})`);
+        bg2.addColorStop(1,  'rgba(0,0,0,0)');
+        vsX.fillStyle=bg2; vsX.fillRect(0,0,W,H);
+        const tB=vsX.createRadialGradient(cx+50,cy-25,0,cx+50,cy-25,100+energy*55);
+        tB.addColorStop(0,`rgba(15,145,158,${bA*0.5})`); tB.addColorStop(1,'rgba(0,0,0,0)');
+        vsX.fillStyle=tB; vsX.fillRect(0,0,W,H);
+        const lakeTop=H*0.20, lakeBot=H*0.83, lakeH2=lakeBot-lakeTop;
+        const ROWS=20;
+        for(let row=0;row<ROWS;row++){
+            const t=row/(ROWS-1);
+            const y0=lakeTop+t*lakeH2;
+            const ys=yToScale(y0);
+            if(!freqData){
+                const amp=(4+energy*8)*ys;
+                const freq=0.007+(1-t)*0.011;
+                const a=(0.025+energy*0.02)*(0.35+t*0.65);
+                vsX.beginPath();
+                for(let px=0;px<=W;px+=4){const w=Math.sin(px*freq+wvPhase+t*3)*amp+Math.sin(px*freq*1.6+wvPhase2+t*2)*amp*0.38;px===0?vsX.moveTo(px,y0+w):vsX.lineTo(px,y0+w);}
+                vsX.strokeStyle=`rgba(50,140,200,${a})`; vsX.lineWidth=0.6+t*0.5; vsX.stroke();
+                continue;
+            }
+            const bin=Math.floor(t*freqData.length*0.38);
+            const fv=freqData[bin]/255;
+            const amp=(4+fv*20+energy*9)*ys;
+            const freq=0.007+(1-t)*0.012;
+            const a=(0.038+fv*0.085+energy*0.038)*(0.35+t*0.65);
+            const cs=(row*73)%4;
+            let r,g,b;
+            if(cs===0){r=40;g=150;b=215;} else if(cs===1){r=18;g=112;b=158;} else if(cs===2){r=90;g=188;b=238;} else{r=22;g=135;b=148;}
+            vsX.beginPath();
+            for(let px=0;px<=W;px+=3){const w=Math.sin(px*freq+wvPhase+t*3.5)*amp+Math.sin(px*freq*1.65+wvPhase2+t*2.2)*amp*0.4;px===0?vsX.moveTo(px,y0+w):vsX.lineTo(px,y0+w);}
+            vsX.strokeStyle=`rgba(${r},${g},${b},${a})`; vsX.lineWidth=0.7+t*0.6; vsX.stroke();
+            if(row%3===1&&fv>0.28){
+                vsX.beginPath();
+                for(let px=0;px<=W;px+=4){const w=Math.sin(px*freq+wvPhase+t*3.5)*amp+Math.sin(px*freq*1.65+wvPhase2+t*2.2)*amp*0.4;px===0?vsX.moveTo(px,y0+w-1.2):vsX.lineTo(px,y0+w-1.2);}
+                vsX.strokeStyle=`rgba(205,242,255,${a*0.55})`; vsX.lineWidth=0.38; vsX.stroke();
+            }
+        }
+        for(let p=0;p<6;p++){
+            const frac=(p+0.5)/6;
+            const bin=Math.floor(frac*((freqData?freqData.length:256)*0.45));
+            const fv=freqData?(freqData[bin]/255):0.1;
+            if(fv<0.12) continue;
+            const px2=cx+Math.sin(wvPhase*0.38+p*2.05)*W*0.30;
+            const py=lakeTop+frac*lakeH2*0.78+Math.cos(wvPhase*0.28+p)*lakeH2*0.035;
+            const pr=28+fv*55; const pa=fv*0.065;
+            const ys2=yToScale(py);
+            const pg=vsX.createRadialGradient(px2,py,0,px2,py,pr);
+            pg.addColorStop(0,`rgba(130,215,255,${pa})`); pg.addColorStop(1,'rgba(0,0,0,0)');
+            vsX.fillStyle=pg; vsX.beginPath(); vsX.ellipse(px2,py,pr,pr*ys2,0,0,Math.PI*2); vsX.fill();
+        }
+        if(bloomPulse>0.38){
+            const fl=vsX.createRadialGradient(cx,cy,0,cx,cy,W*0.48);
+            fl.addColorStop(0,`rgba(90,195,255,${(bloomPulse-0.38)*0.045})`);
+            fl.addColorStop(1,'rgba(0,0,0,0)');
+            vsX.fillStyle=fl; vsX.fillRect(0,0,W,H);
+        }
+    }
+
+    let mistParticles = [];
+    function initMist(){
+        mistParticles = [];
+        for(let i=0;i<22;i++) mistParticles.push(spawnMistParticle(true));
+    }
+    function spawnMistParticle(random){
+        const lakeY = H*0.38;
+        const y = random ? lakeY+Math.random()*(H*0.3) : lakeY+(H*0.25);
+        return { x:Math.random()*W, y, vy:-0.08-Math.random()*0.12, vx:(Math.random()-0.5)*0.15, r:60+Math.random()*120, alpha:0.025+Math.random()*0.045, maxAlpha:0.025+Math.random()*0.045, phase:Math.random()*Math.PI*2, speed:0.002+Math.random()*0.003, life:0, maxLife:800+Math.random()*600 };
+    }
+    function drawMist(energy){
+        msX.clearRect(0,0,W,H);
+        for(let i=mistParticles.length-1;i>=0;i--){
+            const m=mistParticles[i];
+            m.life++; m.phase+=m.speed; m.x+=m.vx+Math.sin(m.phase)*0.18; m.y+=m.vy*(1+energy*0.5);
+            const lifeRatio=m.life/m.maxLife;
+            const fadeIn=Math.min(1,lifeRatio*6);
+            const fadeOut=Math.max(0,1-Math.pow((lifeRatio-0.6)/0.4,2));
+            const a=m.maxAlpha*fadeIn*fadeOut*(1+energy*0.6);
+            if(m.life>=m.maxLife){mistParticles.splice(i,1);mistParticles.push(spawnMistParticle(false));continue;}
+            const mg2=msX.createRadialGradient(m.x,m.y,0,m.x,m.y,m.r);
+            const lc=LAKE_COLORS[Math.floor(lakeColorPhase)%LAKE_COLORS.length];
+            const mr=lc[0]*0.3+120, mg3=lc[1]*0.3+145, mb=lc[2]*0.3+165;
+            mg2.addColorStop(0,`rgba(${mr|0},${mg3|0},${mb|0},${a})`);
+            mg2.addColorStop(0.55,`rgba(${mr|0},${mg3|0},${mb|0},${a*0.3})`);
+            mg2.addColorStop(1,'rgba(0,0,0,0)');
+            msX.fillStyle=mg2; msX.beginPath(); msX.ellipse(m.x,m.y,m.r,m.r*0.32,0,0,Math.PI*2); msX.fill();
+        }
+        while(mistParticles.length<22) mistParticles.push(spawnMistParticle(false));
+    }
+
+    let fireflies = [];
+    function initFireflies(){
+        fireflies = [];
+        for(let i=0;i<28;i++) fireflies.push(spawnFirefly(true));
+    }
+    function spawnFirefly(random){
+        const lakeTop=H*0.25, lakeBot=H*0.85;
+        return { x:Math.random()*W, y:random?lakeTop+Math.random()*(lakeBot-lakeTop):lakeTop+Math.random()*(lakeBot-lakeTop)*0.5, vx:(Math.random()-0.5)*0.35, vy:(Math.random()-0.5)*0.22, phase:Math.random()*Math.PI*2, glowPhase:Math.random()*Math.PI*2, speed:0.012+Math.random()*0.025, glowSpeed:0.015+Math.random()*0.04, r:1.2+Math.random()*1.8, maxGlow:6+Math.random()*12, life:0, maxLife:1200+Math.random()*1800, hue:Math.random()<0.6?'warm':'cool', wanderAngle:Math.random()*Math.PI*2, wanderSpeed:0.008+Math.random()*0.012 };
+    }
+    function drawFireflies(energy, beat){
+        ffX.clearRect(0,0,W,H);
+        for(let i=fireflies.length-1;i>=0;i--){
+            const f=fireflies[i];
+            f.life++; f.phase+=f.speed; f.glowPhase+=f.glowSpeed*(1+energy*0.8);
+            f.wanderAngle+=f.wanderSpeed*(Math.random()-0.48);
+            f.vx=f.vx*0.97+Math.cos(f.wanderAngle)*0.012; f.vy=f.vy*0.97+Math.sin(f.wanderAngle)*0.006;
+            f.x+=f.vx; f.y+=f.vy;
+            if(f.x<-20)f.x=W+20; if(f.x>W+20)f.x=-20;
+            if(f.y<H*0.1)f.vy+=0.02; if(f.y>H*0.9)f.vy-=0.02;
+            if(f.life>=f.maxLife){fireflies.splice(i,1);fireflies.push(spawnFirefly(false));continue;}
+            const lifeRatio=f.life/f.maxLife;
+            const fadeIn=Math.min(1,lifeRatio*8);
+            const fadeOut=Math.max(0,1-lifeRatio*3);
+            const glowAnim=Math.sin(f.glowPhase)*0.5+0.5;
+            const beatBoost=beat?1.8:1.0;
+            const glowA=(0.55+glowAnim*0.45)*fadeIn*fadeOut*beatBoost*(0.7+energy*0.5);
+            const glowR=f.maxGlow*(0.5+glowAnim*0.5)*(1+energy*0.3)*beatBoost;
+            let r1,g1,b1,r2,g2,b2;
+            if(f.hue==='warm'){r1=180+glowAnim*50;g1=240;b1=80+glowAnim*40;r2=120;g2=200;b2=30;}
+            else{r1=80+glowAnim*30;g1=220;b1=200+glowAnim*55;r2=30;g2=160;b2=180;}
+            const fg=ffX.createRadialGradient(f.x,f.y,0,f.x,f.y,glowR);
+            fg.addColorStop(0,`rgba(${r1|0},${g1|0},${b1|0},${glowA*0.7})`);
+            fg.addColorStop(0.4,`rgba(${r2|0},${g2|0},${b2|0},${glowA*0.25})`);
+            fg.addColorStop(1,'rgba(0,0,0,0)');
+            ffX.fillStyle=fg; ffX.beginPath(); ffX.arc(f.x,f.y,glowR,0,Math.PI*2); ffX.fill();
+            ffX.beginPath(); ffX.arc(f.x,f.y,f.r*(0.8+glowAnim*0.5),0,Math.PI*2);
+            ffX.fillStyle=`rgba(${r1|0},${g1|0},${b1|0},${Math.min(1,glowA*1.3)})`;
+            ffX.fill();
+        }
+        while(fireflies.length<28) fireflies.push(spawnFirefly(false));
+    }
+
+    let audioCtx,analyser,source,dataArray,freqData;
+    let beatCooldown=0, lastBassAvg=0, globalEnergy=0;
+    let midBeatCooldown=0, lastMidAvg=0;
+    let rhythmAccumulator=0, bassHistory=new Float32Array(8), bassHistIdx=0;
+
+    function setupAudio() {
+        if (audioCtx) return;
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        source = audioCtx.createMediaElementSource(sndAudioEl);
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 2048;
+        analyser.smoothingTimeConstant = 0.80;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        freqData = new Uint8Array(analyser.frequencyBinCount);
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+    }
+
+    function sndLoadFile(file){
+        setupAudio();
+        document.getElementById('snd-track-name').textContent = file.name;
+        sndAudioEl.pause();
+        sndAudioEl.src = URL.createObjectURL(file);
+        sndAudioEl.loop = false;
+        sndIsPlaying = false;
+        document.getElementById('snd-play-btn').textContent = '▷ Play';
+        document.getElementById('snd-upload-zone').classList.remove('visible');
+        sndAudioEl.ontimeupdate=()=>{ if(sndAudioEl.duration) document.getElementById('snd-progress-fill').style.width=(sndAudioEl.currentTime/sndAudioEl.duration*100)+'%'; };
+        sndAudioEl.onended=()=>{ sndIsPlaying=false; document.getElementById('snd-play-btn').textContent='▷ Play'; };
+    }
+
+    document.getElementById('snd-file-input').addEventListener('change', e => { if(e.target.files[0]) sndLoadFile(e.target.files[0]); });
+    document.getElementById('snd-upload-zone').addEventListener('dragover', e => e.preventDefault());
+    document.getElementById('snd-upload-zone').addEventListener('drop', e => { e.preventDefault(); if(e.dataTransfer.files[0]) sndLoadFile(e.dataTransfer.files[0]); });
+    document.getElementById('snd-play-btn').addEventListener('click', () => {
+        setupAudio();
+        if(audioCtx.state==='suspended') audioCtx.resume();
+        if(sndIsPlaying){ sndAudioEl.pause(); }
+        else{ sndAudioEl.play(); }
+        sndIsPlaying = !sndIsPlaying;
+        document.getElementById('snd-play-btn').textContent = sndIsPlaying ? '⏸ Pause' : '▷ Play';
+    });
+    document.getElementById('snd-restart-btn').addEventListener('click', () => { if(sndAudioEl) sndAudioEl.currentTime = 0; });
+    document.getElementById('snd-upload-btn').addEventListener('click', () => {
+        document.getElementById('snd-upload-zone').classList.add('visible');
+    });
+    document.getElementById('snd-progress-wrap').addEventListener('click', e => {
+        if(!sndAudioEl || !sndAudioEl.duration || sndAudioEl.loop) return;
+        const rect = e.currentTarget.getBoundingClientRect();
+        sndAudioEl.currentTime = ((e.clientX-rect.left)/rect.width)*sndAudioEl.duration;
+    });
+
+    let sndFrame = 0;
+    function sndLoop(){
+        requestAnimationFrame(sndLoop);
+        sndFrame++;
+        beatCooldown    = Math.max(0, beatCooldown-1);
+        midBeatCooldown = Math.max(0, midBeatCooldown-1);
+        let beat=false; let curFreq=null;
+
+        if(analyser && sndIsPlaying){
+            analyser.getByteFrequencyData(freqData); analyser.getByteTimeDomainData(dataArray);
+            curFreq = freqData;
+            let bass=0; for(let i=0;i<6;i++) bass+=freqData[i]; bass/=6;
+            let lowMid=0; for(let i=6;i<24;i++) lowMid+=freqData[i]; lowMid/=18;
+            let mid=0;  for(let i=6;i<50;i++) mid+=freqData[i]; mid/=44;
+            let ovr=0;  for(let i=0;i<100;i++) ovr+=freqData[i]; ovr/=100;
+            globalEnergy = globalEnergy*0.85+(ovr/255)*0.15;
+            bassHistory[bassHistIdx%8]=bass; bassHistIdx++;
+            let bassRollingAvg=0; for(let v of bassHistory) bassRollingAvg+=v; bassRollingAvg/=8;
+            const beatThreshold = Math.max(1.22, 1.38-globalEnergy*0.18);
+            if(bass>bassRollingAvg*beatThreshold && bass>95 && beatCooldown===0){
+                beat=true; beatCooldown=8;
+                const numDrops=2+Math.floor((bass/255)*3);
+                for(let d=0;d<numDrops;d++) spawnDrop((bass/255)*2.4+Math.random()*0.3, true);
+                if(bass>165) spawnDrop((bass/255)*1.6, false);
+                document.getElementById('snd-energy-val').textContent = Math.round(ovr);
+            }
+            lastBassAvg = lastBassAvg*0.9+bass*0.1;
+            if(lowMid>lastMidAvg*1.28 && lowMid>80 && midBeatCooldown===0){
+                midBeatCooldown=6;
+                spawnDrop(lowMid/255*1.5, false);
+                if(lowMid>140) spawnDrop(lowMid/255*1.0, false);
+            }
+            lastMidAvg = lastMidAvg*0.88+lowMid*0.12;
+            rhythmAccumulator += globalEnergy*0.8+0.15;
+            if(rhythmAccumulator>=1.0){ rhythmAccumulator-=1.0; spawnDrop(mid/255*1.3, false); }
+        } else {
+            if(sndFrame%48===0) spawnDrop(0.28, false);
+            globalEnergy *= 0.97;
+        }
+        if(Math.random()<(sndIsPlaying?0.006:0.010)) spawnDrop(0.18+Math.random()*0.22, false);
+
+        drawStars(beat, globalEnergy);
+        drawLake();
+        drawDrops();
+        drawMist(globalEnergy);
+        drawFireflies(globalEnergy, beat);
+        drawWaterViz(curFreq, globalEnergy, beat);
+    }
+
+    sndResize();
+    initMist();
+    sndLoop();
+    for(let i=0;i<10;i++) setTimeout(() => spawnDrop(0.22+Math.random()*0.38, false), i*520);
+
+} 
+</script>
 </body>
 </html>
