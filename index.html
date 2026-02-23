@@ -61,38 +61,12 @@
         .sub-button-container.open { max-height: 400px; margin-bottom: 20px; }
         .sub-link { display: block; text-decoration: none; color: rgba(255, 255, 255, 0.7); background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 12px; border-radius: 8px; font-size: 0.85rem; transition: 0.3s; text-align: left; }
 
-        /* Diary & Note 전용 스타일 */
-        #diary-textarea {
-            width: 100%; height: 200px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px; color: #fff; padding: 15px;
-            font-size: 0.9rem; line-height: 1.6; resize: none; margin-bottom: 15px;
-            outline: none; transition: border-color 0.3s;
-        }
-        #diary-textarea:focus { border-color: #00bcd4; }
-        .save-status { font-size: 0.75rem; color: #00bcd4; margin-top: -10px; margin-bottom: 15px; height: 1rem; opacity: 0; transition: opacity 0.3s; }
-
         /* Lotto & Tarot (기존 스타일 유지) */
         .lotto-row { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
         .ball { width: 36px; height: 36px; line-height: 36px; border-radius: 50%; font-size: 0.9rem; font-weight: 700; color: #222; background: #eee; display: flex; justify-content: center; align-items: center; }
         .ball-1-10 { background: #fbc400; } .ball-11-20 { background: #69c8f2; } .ball-21-30 { background: #ff7272; } .ball-31-40 { background: #aaaaaa; } .ball-41-45 { background: #b0d840; }
         .generate-btn { background: #00bcd4; color: #000; border: none; padding: 16px 32px; font-size: 1rem; font-weight: 700; border-radius: 50px; cursor: pointer; margin-top: 10px; transition: 0.3s; }
         
-        .tarot-container { height: 420px; position: relative; display: flex; flex-direction: column; align-items: center; }
-        #card-orbit { position: relative; width: 100%; height: 300px; perspective: 1200px; display: flex; justify-content: center; align-items: center; }
-        .orbit-card { position: absolute; width: 80px; height: 130px; background: linear-gradient(135deg, #1a1a1a 0%, #000 100%); border: 1px solid rgba(0, 188, 212, 0.4); border-radius: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; transition: 0.3s; }
-        @keyframes orbitRotate { from { transform: rotateY(0deg) translateX(130px) rotateY(0deg); } to { transform: rotateY(360deg) translateX(130px) rotateY(-360deg); } }
-        
-        .tarot-card-wrapper { perspective: 1000px; width: 200px; height: 340px; position: absolute; top: 0; z-index: 100; }
-        .tarot-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-style: preserve-3d; }
-        .tarot-card-inner.is-flipped { transform: rotateY(180deg); }
-        .tarot-front, .tarot-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; border: 2px solid rgba(255,255,255,0.2); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px; }
-        .tarot-front { background: linear-gradient(135deg, #1a1a1a 0%, #000 100%); color: #00bcd4; }
-        .tarot-back { background: #ffffff; color: #1a1a1a; transform: rotateY(180deg); }
-        .card-img-container { width: 100%; height: 220px; overflow: hidden; border-radius: 8px; background: #f0f0f0; margin-bottom: 12px; }
-        .tarot-back img { width: 100%; height: 100%; object-fit: cover; }
-
         .footer { margin-top: 50px; font-size: 0.7rem; color: rgba(255, 255, 255, 0.4); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -106,7 +80,7 @@
         <div class="tab-menu">
             <button class="tab-button active" onclick="openTab(event, 'intro')">INTRO</button>
             <button class="tab-button" onclick="openTab(event, 'lotto')">LOTTO</button>
-            <button class="tab-button" onclick="openTab(event, 'tarrot')">TARROT</button>
+            <button class="tab-button" onclick="openTab(event, 'visualizer')">VISUALIZER</button>
         </div>
 
         <div id="intro" class="tab-content active">
@@ -127,7 +101,7 @@
                 <a href="Mani and Red Car.pdf" class="sub-link" target="_blank">🚗 Mani and Red Car</a>
                 <a href="a girl who has become a tree.pdf" class="sub-link" target="_blank">🌳 A girl who has become a tree</a>
             </div>
-            <div class="link-button" onclick="openTabDirect('tarrot')">DIARY & NOTE</div>
+            <div class="link-button" onclick="openTabDirect('visualizer')">AUDIO VISUALIZER</div>
         </div>
 
         <div id="lotto" class="tab-content">
@@ -137,35 +111,8 @@
             <button class="generate-btn" onclick="generateLotto()">GENERATE 5 SETS</button>
         </div>
 
-        <div id="tarrot" class="tab-content">
-            <h2 style="margin-bottom: 10px;">Diary & Note</h2>
-            
-            <div id="diary-section">
-                <textarea id="diary-textarea" placeholder="당신의 생각이나 일기를 적어보세요. (자동 저장됩니다)"></textarea>
-                <div id="save-status" class="save-status">저장되었습니다.</div>
-                <button class="link-button" style="width:100%;" onclick="toggleTarotView()">오늘의 타로 확인하기</button>
-            </div>
-
-            <div id="tarot-game-section" style="display:none;">
-                <p id="tarot-guide" style="font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-bottom: 25px;">회전하는 카드 중 하나를 선택하세요.</p>
-                <div class="tarot-container">
-                    <div id="card-orbit"></div>
-                    <div id="selected-card-view" class="tarot-card-wrapper" style="display:none;">
-                        <div class="tarot-card-inner" id="tarot-card">
-                            <div class="tarot-front"></div>
-                            <div class="tarot-back">
-                                <div class="card-img-container">
-                                    <img id="tarot-img" src="" alt="Card Image" onerror="this.src='https://via.placeholder.com/200x300?text=No+Image';">
-                                </div>
-                                <span id="tarot-name">CARD NAME</span>
-                                <p id="tarot-desc"></p>
-                            </div>
-                        </div>
-                    </div>
-                    <button id="shuffle-btn" class="generate-btn" style="padding: 12px 25px; font-size: 0.85rem; margin-top: 350px; display:none;" onclick="resetTarot()">SHUFFLE AGAIN</button>
-                    <button class="link-button" style="width:100%; margin-top:20px;" onclick="toggleTarotView()">노트로 돌아가기</button>
-                </div>
-            </div>
+        <div id="visualizer" class="tab-content">
+<iframe src="audio-visualizer_rain-2.html" style="width: 100%; height: 450px; border: 0;"></iframe>
         </div>
 
         <div class="footer">
@@ -176,43 +123,8 @@
     <script>
         document.getElementById('current-year').textContent = new Date().getFullYear();
 
-        // Diary 저장 기능
-        const diaryTextarea = document.getElementById('diary-textarea');
-        const saveStatus = document.getElementById('save-status');
-
-        // 페이지 로드 시 저장된 내용 불러오기
-        window.onload = () => {
-            const savedNote = localStorage.getItem('user_diary');
-            if (savedNote) diaryTextarea.value = savedNote;
-            initTarotOrbit();
-        };
-
-        // 입력할 때마다 로컬 스토리지에 자동 저장 (디바운싱 적용)
-        let saveTimeout;
-        diaryTextarea.addEventListener('input', () => {
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(() => {
-                localStorage.setItem('user_diary', diaryTextarea.value);
-                saveStatus.style.opacity = 1;
-                setTimeout(() => { saveStatus.style.opacity = 0; }, 2000);
-            }, 1000); // 1초간 입력이 없으면 저장
-        });
-
         function toggleWorks() {
             document.getElementById('works-container').classList.toggle('open');
-        }
-
-        function toggleTarotView() {
-            const diarySec = document.getElementById('diary-section');
-            const tarotSec = document.getElementById('tarot-game-section');
-            if (diarySec.style.display === 'none') {
-                diarySec.style.display = 'block';
-                tarotSec.style.display = 'none';
-            } else {
-                diarySec.style.display = 'none';
-                tarotSec.style.display = 'block';
-                resetTarot();
-            }
         }
 
         function openTab(evt, tabName) {
@@ -222,7 +134,7 @@
             for (let btn of buttons) btn.classList.remove('active');
             
             const mainContainer = document.getElementById('main-container');
-            if(tabName === 'tarrot') {
+            if(tabName === 'visualizer') {
                 mainContainer.classList.add('tarrot-bg-active');
             } else {
                 mainContainer.classList.remove('tarrot-bg-active');
@@ -233,7 +145,7 @@
         }
 
         function openTabDirect(tabName) {
-            const btn = document.querySelector(`.tab-button[onclick*="${tabName}"]`);
+            const btn = document.querySelector(`.tab-button[onclick*="'''+tabName+'''"]`);
             openTab({currentTarget: btn}, tabName);
         }
 
@@ -264,76 +176,6 @@
                 display.appendChild(row);
             }
         }
-
-        const majorArcana = [
-            { name: "0. The Fool", desc: "새로운 시작과 순수한 모험의 기운이 있습니다." },
-            { name: "1. The Magician", desc: "창의적인 재능을 발휘할 완벽한 시기입니다." },
-            { name: "2. The High Priestess", desc: "직관과 내면의 목소리에 집중해 보세요." },
-            { name: "3. The Empress", desc: "풍요로움과 창조적인 결실이 예상됩니다." },
-            { name: "4. The Emperor", desc: "질서와 리더십을 통해 상황을 통제하세요." },
-            { name: "5. The Hierophant", desc: "현명한 조언이나 전통의 지혜가 필요합니다." },
-            { name: "6. The Lovers", desc: "조화로운 관계와 신중한 선택의 기로입니다." },
-            { name: "7. The Chariot", desc: "목표를 향해 강력하게 전진할 때입니다." },
-            { name: "8. Strength", desc: "인내와 부드러운 힘이 어려움을 극복합니다." },
-            { name: "9. The Hermit", desc: "자신을 돌아보며 내면의 답을 찾아보세요." },
-            { name: "10. Wheel of Fortune", desc: "행운의 흐름이 당신에게 다가오고 있습니다." },
-            { name: "11. Justice", desc: "공정하고 객관적인 판단이 필요한 시점입니다." },
-            { name: "12. The Hanged Man", desc: "관점을 바꾸면 새로운 기회가 보일 것입니다." },
-            { name: "13. Death", desc: "변화를 위해 과거를 놓아줄 시간입니다." },
-            { name: "14. Temperance", desc: "절제와 균형을 통해 안정을 되찾으세요." },
-            { name: "15. The Devil", desc: "집착에서 벗어나 자유를 찾을 용기가 필요합니다." },
-            { name: "16. The Tower", desc: "갑작스러운 변화가 성장의 밑거름이 됩니다." },
-            { name: "17. The Star", desc: "희망과 영감이 당신의 길을 비추고 있습니다." },
-            { name: "18. The Moon", desc: "불안함 속에서도 당신의 직관을 신뢰하세요." },
-            { name: "19. The Sun", desc: "밝은 에너지와 확실한 성공이 기다립니다." },
-            { name: "20. Judgement", desc: "명확한 결단과 보상의 시간이 다가왔습니다." },
-            { name: "21. The World", desc: "하나의 완성된 단계에 도달했습니다. 축하합니다!" }
-        ];
-
-        let isSelected = false;
-        function initTarotOrbit() {
-            const orbitContainer = document.getElementById('card-orbit');
-            const selectedView = document.getElementById('selected-card-view');
-            const shuffleBtn = document.getElementById('shuffle-btn');
-            const guide = document.getElementById('tarot-guide');
-            if(!orbitContainer) return;
-            orbitContainer.innerHTML = '';
-            orbitContainer.style.display = 'flex';
-            selectedView.style.display = 'none';
-            shuffleBtn.style.display = 'none';
-            guide.innerText = "회전하는 카드 중 하나를 선택하세요.";
-            isSelected = false;
-            for (let i = 0; i < 22; i++) {
-                const card = document.createElement('div');
-                card.className = 'orbit-card';
-                card.style.animation = `orbitRotate 6s linear infinite`;
-                card.style.animationDelay = `${(i * (6 / 22)) * -1}s`;
-                card.onclick = () => pickTarotCard();
-                orbitContainer.appendChild(card);
-            }
-        }
-
-        function pickTarotCard() {
-            if (isSelected) return;
-            isSelected = true;
-            const orbitContainer = document.getElementById('card-orbit');
-            const selectedView = document.getElementById('selected-card-view');
-            const cardInner = document.getElementById('tarot-card');
-            const shuffleBtn = document.getElementById('shuffle-btn');
-            const guide = document.getElementById('tarot-guide');
-            orbitContainer.style.display = 'none';
-            selectedView.style.display = 'block';
-            cardInner.classList.remove('is-flipped');
-            guide.innerText = "당신의 운명을 확인하세요.";
-            const randomIndex = Math.floor(Math.random() * majorArcana.length);
-            const cardData = majorArcana[randomIndex];
-            document.getElementById('tarot-img').src = `./Tarrot/${randomIndex}.png`;
-            document.getElementById('tarot-name').innerText = cardData.name;
-            document.getElementById('tarot-desc').innerText = cardData.desc;
-            setTimeout(() => { cardInner.classList.add('is-flipped'); shuffleBtn.style.display = 'block'; }, 150);
-        }
-
-        function resetTarot() { initTarotOrbit(); }
     </script>
 </body>
 </html>

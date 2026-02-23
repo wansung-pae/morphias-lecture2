@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Celestial Rain — Audio Visualizer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Josefin+Sans:wght@100;200&display=swap');
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #010d1a; overflow: hidden; width: 100vw; height: 100vh; font-family: 'Cormorant Garamond', serif; cursor: none; }
+  #universe { position: relative; width: 100%; height: 100%; }
+  #bg-canvas      { position: absolute; inset: 0; z-index: 0; }
+  #lake-canvas    { position: absolute; inset: 0; z-index: 1; }
+  #drop-canvas    { position: absolute; inset: 0; z-index: 2; }
+  #mist-canvas    { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+  #firefly-canvas { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+  #vis-canvas     { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+  .vignette {
+    position: absolute; inset: 0; z-index: 6; pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 55% at 50% 38%, transparent 20%, rgba(1,13,26,0.45) 65%, rgba(1,13,26,0.92) 100%),
+      linear-gradient(to bottom, rgba(1,13,26,0.5) 0%, transparent 18%, transparent 75%, rgba(1,13,26,0.7) 100%);
+  }
+  .hud {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 12;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 1.8rem 2.2rem; pointer-events: none;
+  }
+  .title-label { font-family:'Josefin Sans',sans-serif; font-weight:100; font-size:0.58rem; letter-spacing:0.5em; text-transform:uppercase; color:rgba(160,220,245,0.4); }
+  .title-main  { font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:300; font-size:1.4rem; letter-spacing:0.12em; color:rgba(200,240,255,0.7); text-shadow:0 0 28px rgba(60,160,220,0.4); margin-top:0.15rem; }
+  .energy-block{ text-align:right; display:flex; flex-direction:column; gap:0.2rem; }
+  .energy-label{ font-family:'Josefin Sans',sans-serif; font-weight:100; font-size:0.55rem; letter-spacing:0.4em; text-transform:uppercase; color:rgba(100,200,240,0.35); }
+  #energy-val  { font-family:'Josefin Sans',sans-serif; font-weight:100; font-size:1.6rem; letter-spacing:0.05em; color:rgba(180,235,255,0.55); }
+  .controls {
+    position: absolute; bottom: 0; left: 0; right: 0; z-index: 12;
+    display: flex; flex-direction: column; align-items: center;
+    padding-bottom: 2.2rem; gap: 1rem;
+  }
+  .progress-wrap { width:min(420px,88vw); height:1px; background:rgba(60,140,200,0.12); cursor:pointer; pointer-events:all; }
+  .progress-fill { height:100%; width:0%; background:linear-gradient(to right,rgba(20,80,140,0.8),rgba(80,200,240,0.9)); box-shadow:0 0 6px rgba(80,200,240,0.35); transition:width 0.4s linear; }
+  .btn-row { display:flex; align-items:center; gap:1.2rem; pointer-events:all; }
+  .btn {
+    background:rgba(3,18,36,0.5); border:1px solid rgba(60,150,210,0.22);
+    color:rgba(160,220,245,0.65); font-family:'Josefin Sans',sans-serif; font-weight:100;
+    font-size:0.58rem; letter-spacing:0.35em; text-transform:uppercase;
+    padding:0.55rem 1.4rem; cursor:pointer; transition:all 0.35s ease; backdrop-filter:blur(6px);
+  }
+  .btn:hover { border-color:rgba(80,200,240,0.45); color:rgba(220,245,255,0.9); box-shadow:0 0 14px rgba(60,180,230,0.12); }
+  .btn.primary { border-color:rgba(60,170,220,0.35); padding:0.65rem 2.2rem; background:rgba(10,40,70,0.35); }
+  .track-name { font-family:'Josefin Sans',sans-serif; font-weight:100; font-size:0.58rem; letter-spacing:0.28em; color:rgba(120,190,230,0.35); text-transform:uppercase; max-width:340px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #upload-zone {
+    position:absolute; inset:0; z-index:22; display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(ellipse at 50% 50%, rgba(3,18,40,0.75) 0%, rgba(1,10,22,0.96) 100%);
+    backdrop-filter:blur(3px); transition:opacity 0.9s ease;
+  }
+  #upload-zone.hidden { opacity:0; pointer-events:none; }
+  .upload-inner { display:flex; flex-direction:column; align-items:center; gap:1.6rem; }
+  .ripple-icon { width:130px; height:70px; position:relative; display:flex; align-items:center; justify-content:center; }
+  .ripple-icon svg { width:100%; height:100%; }
+  .ri-ring { fill:none; stroke:rgba(60,160,220,0.2); animation:riPulse 3s ease-in-out infinite; transform-origin:center; }
+  .ri-ring:nth-child(2){ animation-delay:0.6s; }
+  .ri-ring:nth-child(3){ animation-delay:1.2s; }
+  @keyframes riPulse { 0%,100%{opacity:0.5;transform:scale(1);}50%{opacity:0.2;transform:scale(1.06);} }
+  .ri-dot { position:absolute; width:8px; height:8px; border-radius:50%; background:rgba(140,220,255,0.75); box-shadow:0 0 12px rgba(80,200,250,0.8),0 0 24px rgba(60,180,240,0.3); animation:riPulse 3s ease-in-out infinite; }
+  .upload-title { font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:300; font-size:1.9rem; letter-spacing:0.07em; color:rgba(200,240,255,0.8); text-shadow:0 0 35px rgba(60,160,220,0.4); }
+  .upload-sub   { font-family:'Josefin Sans',sans-serif; font-weight:100; font-size:0.58rem; letter-spacing:0.42em; color:rgba(80,180,230,0.4); text-transform:uppercase; }
+  #cursor       { position:fixed; width:6px; height:6px; border-radius:50%; background:rgba(140,220,255,0.9); pointer-events:none; z-index:9999; transform:translate(-50%,-50%); box-shadow:0 0 8px rgba(80,200,255,0.7),0 0 16px rgba(60,180,240,0.3); }
+  #cursor-ring  { position:fixed; width:24px; height:24px; border-radius:50%; border:1px solid rgba(80,190,240,0.3); pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:all 0.12s ease; }
+  #file-input { display:none; }
+</style>
+</head>
+<body>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div id="universe">
+  <canvas id="bg-canvas"></canvas>
+  <canvas id="lake-canvas"></canvas>
+  <canvas id="drop-canvas"></canvas>
+  <canvas id="mist-canvas"></canvas>
+  <canvas id="firefly-canvas"></canvas>
+  <canvas id="vis-canvas"></canvas>
+  <div class="vignette"></div>
+
+  <div class="hud">
+    <div>
+      <div class="title-label">Celestial Rain · Visualizer</div>
+      <div class="title-main">湖の雨</div>
+    </div>
+    <div class="energy-block">
+      <div class="energy-label">intensity</div>
+      <div id="energy-val">—</div>
+    </div>
+  </div>
+
+  <div id="upload-zone">
+    <div class="upload-inner">
+      <div class="ripple-icon">
+        <svg viewBox="0 0 130 60" xmlns="http://www.w3.org/2000/svg">
+          <ellipse class="ri-ring" cx="65" cy="30" rx="60" ry="24" stroke-width="1"/>
+          <ellipse class="ri-ring" cx="65" cy="30" rx="40" ry="16" stroke-width="0.8"/>
+          <ellipse class="ri-ring" cx="65" cy="30" rx="20" ry="8"  stroke-width="0.6"/>
+        </svg>
+        <div class="ri-dot"></div>
+      </div>
+      <div class="upload-title">Drop your music here</div>
+      <div class="upload-sub">mp3 · wav · ogg · flac</div>
+      <button class="btn primary" onclick="document.getElementById('file-input').click()">Choose File</button>
+    </div>
+    <input type="file" id="file-input" accept="audio/*">
+  </div>
+
+  <div class="controls">
+    <div class="progress-wrap" id="progress-wrap"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="btn-row">
+      <button class="btn" id="restart-btn">↺ Restart</button>
+      <button class="btn primary" id="play-btn">▷ Play</button>
+      <button class="btn" id="upload-btn">⊕ New Track</button>
+    </div>
+    <div class="track-name" id="track-name">No track loaded</div>
+  </div>
+</div>
+
+<script>
+// ─── Cursor ───────────────────────────────────────────────────────────────────
+const cursor = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursor-ring');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX+'px'; cursor.style.top = e.clientY+'px';
+  setTimeout(() => { cursorRing.style.left=e.clientX+'px'; cursorRing.style.top=e.clientY+'px'; }, 55);
+});
+
+// ─── Canvas setup ─────────────────────────────────────────────────────────────
+const bgC=document.getElementById('bg-canvas'),   bgX=bgC.getContext('2d');
+const lkC=document.getElementById('lake-canvas'), lkX=lkC.getContext('2d');
+const dpC=document.getElementById('drop-canvas'), dpX=dpC.getContext('2d');
+const msC=document.getElementById('mist-canvas'), msX=msC.getContext('2d');
+const ffC=document.getElementById('firefly-canvas'), ffX=ffC.getContext('2d');
+const vsC=document.getElementById('vis-canvas'),  vsX=vsC.getContext('2d');
+let W, H, offBg;
+
+function resize() {
+  W=window.innerWidth; H=window.innerHeight;
+  [bgC,lkC,dpC,msC,ffC,vsC].forEach(c=>{c.width=W;c.height=H;});
+  buildBackground(); initStars(); initMist(); initFireflies();
+}
+window.addEventListener('resize', resize);
+
+// ─── Static background ────────────────────────────────────────────────────────
+function buildBackground() {
+  offBg = document.createElement('canvas');
+  offBg.width=W; offBg.height=H;
+  const bx=offBg.getContext('2d');
+
+  // Deep night gradient
+  const sky=bx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,  '#010d1c');
+  sky.addColorStop(0.32,'#021426');
+  sky.addColorStop(0.58,'#031a2e');
+  sky.addColorStop(1,  '#010810');
+  bx.fillStyle=sky; bx.fillRect(0,0,W,H);
+
+  // Central lake glow (matches reference bright center)
+  const lkG=bx.createRadialGradient(W*0.48,H*0.40,0,W*0.5,H*0.48,W*0.62);
+  lkG.addColorStop(0,  'rgba(28,105,175,0.30)');
+  lkG.addColorStop(0.18,'rgba(16, 75,140,0.20)');
+  lkG.addColorStop(0.5, 'rgba( 8, 40, 90,0.10)');
+  lkG.addColorStop(1,  'rgba( 1, 10, 22,0.00)');
+  bx.fillStyle=lkG; bx.fillRect(0,0,W,H);
+
+  // Teal-green secondary bloom
+  const tG=bx.createRadialGradient(W*0.56,H*0.34,0,W*0.56,H*0.40,W*0.28);
+  tG.addColorStop(0,'rgba(18,135,155,0.13)');
+  tG.addColorStop(1,'rgba(18,135,155,0)');
+  bx.fillStyle=tG; bx.fillRect(0,0,W,H);
+
+  // Grain texture
+  const id=bx.getImageData(0,0,W,H); const d=id.data;
+  for(let i=0;i<d.length;i+=4){const n=(Math.random()-0.5)*9; d[i]=Math.max(0,Math.min(255,d[i]+n)); d[i+1]=Math.max(0,Math.min(255,d[i+1]+n)); d[i+2]=Math.max(0,Math.min(255,d[i+2]+n));}
+  bx.putImageData(id,0,0);
+}
+
+// ─── Stars ────────────────────────────────────────────────────────────────────
+let stars=[];
+function initStars(){
+  stars=Array.from({length:200},()=>({
+    x:Math.random()*W, y:Math.random()*H*0.52,
+    r:Math.random()*1.1+0.15, phase:Math.random()*Math.PI*2,
+    speed:Math.random()*0.005+0.002, bright:Math.random()>0.92,
+  }));
+}
+function drawStars(beat, energy){
+  bgX.clearRect(0,0,W,H); bgX.drawImage(offBg,0,0);
+  stars.forEach(s=>{
+    s.phase+=s.speed;
+    let a=Math.sin(s.phase)*0.35+0.45;
+    if(beat) a=Math.min(1,a*1.45);
+    if(s.bright){
+      const hg=bgX.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*5);
+      hg.addColorStop(0,`rgba(170,230,255,${a*0.35})`); hg.addColorStop(1,'rgba(170,230,255,0)');
+      bgX.fillStyle=hg; bgX.beginPath(); bgX.arc(s.x,s.y,s.r*5,0,Math.PI*2); bgX.fill();
+    }
+    bgX.beginPath(); bgX.arc(s.x,s.y,s.r+(beat?0.25:0),0,Math.PI*2);
+    bgX.fillStyle=s.bright?`rgba(205,242,255,${a})`:`rgba(130,195,228,${a*0.65})`;
+    bgX.fill();
+  });
+}
+
+// ─── Perspective ──────────────────────────────────────────────────────────────
+function yToScale(y){ const t=Math.max(0,Math.min(1,(y-H*0.15)/(H*0.85))); return 0.14+t*0.58; }
+
+// ─── Ripples ──────────────────────────────────────────────────────────────────
+let ripples=[];
+// Beat-synchronized ripple burst pool
+let pendingBeatRipples=0, beatRippleTimer=0;
+
+function spawnRipple(x,y,strength,isBeat){
+  const scale=yToScale(y);
+  // On beat: bigger, faster, more rings, special color
+  const beatMult = isBeat ? 1.8 : 1.0;
+  const colorMode = isBeat ? 'beat' : (Math.random()>0.55 ? 'teal' : 'blue');
+  ripples.push({
+    x, y, r:1,
+    maxR:(85+Math.random()*115+strength*70)*beatMult*(0.55+scale*0.85),
+    speed:(0.85+Math.random()*0.7+strength*0.45)*(isBeat?1.6:1.0),
+    alpha:(0.5+strength*0.22)*(isBeat?1.4:1.0),
+    scale,
+    rings:Math.floor(3+strength*2.2+Math.random()*3+(isBeat?3:0)),
+    ringGap:8+Math.random()*8,
+    colorMode,
+    wobble:Math.random()*0.06+(isBeat?0.04:0),
+    isBeat,
+  });
+}
+// Lake color shimmer state
+let lakeHue=0, lakeColorPhase=0;
+// Palette: blue, purple, green, white, black — cycling slowly
+const LAKE_COLORS=[
+  [20,80,200],   // deep blue
+  [60,20,180],   // purple
+  [10,130,90],   // green
+  [140,200,240], // ice white-blue
+  [5,5,30],      // near black
+  [80,40,220],   // violet
+];
+
+function drawLake(){
+  lkX.clearRect(0,0,W,H);
+
+  // ── Slowly shifting lake base shimmer ─────────────────────────────────────
+  lakeColorPhase += 0.0018; // very slow
+  const ci = Math.floor(lakeColorPhase) % LAKE_COLORS.length;
+  const cn = (ci+1) % LAKE_COLORS.length;
+  const cf = lakeColorPhase - Math.floor(lakeColorPhase);
+  const cr = LAKE_COLORS[ci][0]*(1-cf)+LAKE_COLORS[cn][0]*cf;
+  const cg = LAKE_COLORS[ci][1]*(1-cf)+LAKE_COLORS[cn][1]*cf;
+  const cb = LAKE_COLORS[ci][2]*(1-cf)+LAKE_COLORS[cn][2]*cf;
+
+  // Draw multiple soft shimmer bands across lake area
+  const lakeTop=H*0.35, lakeBot=H*0.85;
+  for(let b=0;b<5;b++){
+    const by = lakeTop + (b/5)*(lakeBot-lakeTop);
+    const bw = W*(0.5+b*0.1);
+    const bh = (lakeBot-lakeTop)*0.22;
+    const phase = lakeColorPhase*0.7 + b*1.3;
+    const shimmerX = W*0.5 + Math.sin(phase)*W*0.15;
+    const shimmerA = (0.04+Math.sin(phase*1.3+b)*0.025) * (0.4+b*0.12);
+    const sg = lkX.createRadialGradient(shimmerX,by,0,shimmerX,by,bw*0.5);
+    sg.addColorStop(0, `rgba(${cr|0},${cg|0},${cb|0},${shimmerA})`);
+    sg.addColorStop(0.5,`rgba(${cr|0},${cg|0},${cb|0},${shimmerA*0.3})`);
+    sg.addColorStop(1,'rgba(0,0,0,0)');
+    lkX.fillStyle=sg;
+    lkX.beginPath();
+    lkX.ellipse(shimmerX,by, bw*0.5, bh, 0, 0, Math.PI*2);
+    lkX.fill();
+  }
+  // Thin horizontal iridescent lines for "light on water" effect
+  for(let l=0;l<8;l++){
+    const ly = lakeTop + (l/8)*(lakeBot-lakeTop) + Math.sin(lakeColorPhase*0.5+l)*10;
+    const la = 0.025+Math.sin(lakeColorPhase+l*0.7)*0.015;
+    const lineR=cr*0.8+40, lineG=cg*0.8+60, lineB=cb*0.9+80;
+    lkX.beginPath();
+    lkX.moveTo(0,ly); lkX.lineTo(W,ly);
+    lkX.strokeStyle=`rgba(${lineR|0},${lineG|0},${lineB|0},${Math.max(0,la)})`;
+    lkX.lineWidth=0.5+Math.sin(lakeColorPhase*0.8+l)*0.3;
+    lkX.stroke();
+  }
+
+  // ── Ripples ───────────────────────────────────────────────────────────────
+  for(let i=ripples.length-1;i>=0;i--){
+    const rp=ripples[i];
+    rp.r+=rp.speed;
+    const progress=rp.r/rp.maxR;
+    if(progress>=1){ripples.splice(i,1);continue;}
+    const fadeIn=Math.min(1,rp.r/14);
+    const baseAlpha=rp.alpha*fadeIn*(1-progress);
+
+    for(let k=0;k<rp.rings;k++){
+      const kr=rp.r-k*rp.ringGap;
+      if(kr<=0)continue;
+      const rf=Math.pow(1-k/rp.rings,1.6);
+      const a=baseAlpha*rf;
+      let r,g,b;
+      if(rp.colorMode==='beat'){
+        // Beat ripples: mix lake color with bright white
+        r=cr*0.5+180*(1-progress);
+        g=cg*0.3+160*(1-progress);
+        b=cb*0.7+255*(1-progress);
+      } else if(rp.colorMode==='teal'){
+        r=12+progress*18; g=95+(1-progress)*75; b=148+(1-progress)*52;
+      } else {
+        r=35+(1-progress)*85; g=135+(1-progress)*72; b=208+(1-progress)*38;
+      }
+
+      lkX.beginPath();
+      lkX.ellipse(rp.x,rp.y,kr,kr*rp.scale*(1+rp.wobble*Math.sin(kr*0.09)),0,0,Math.PI*2);
+      lkX.strokeStyle=`rgba(${r|0},${g|0},${b|0},${a})`;
+      lkX.lineWidth=Math.max(0.3,(rp.isBeat?2.0:1.3)-k*0.14-progress*0.55);
+      lkX.stroke();
+
+      if(k===0&&progress<0.22){
+        lkX.beginPath();
+        lkX.ellipse(rp.x,rp.y,kr*0.86,kr*rp.scale*0.86,0,0,Math.PI*2);
+        lkX.strokeStyle=`rgba(215,245,255,${a*(rp.isBeat?0.7:0.48)})`;
+        lkX.lineWidth=rp.isBeat?0.8:0.45; lkX.stroke();
+      }
+    }
+    // Impact glow - more intense on beat
+    if(progress<0.22){
+      const gR=rp.r*(rp.isBeat?3.8:2.8);
+      const glow=lkX.createRadialGradient(rp.x,rp.y,0,rp.x,rp.y,gR);
+      const glowA=rp.isBeat?0.28:0.16;
+      const glowColor=rp.isBeat?`rgba(${cr|0},${Math.min(255,cg+80)|0},255`:
+                                 `rgba(175,232,255`;
+      glow.addColorStop(0,`${glowColor},${glowA*(1-progress/0.22)})`);
+      glow.addColorStop(1,`${glowColor},0)`);
+      lkX.fillStyle=glow;
+      lkX.beginPath();
+      lkX.ellipse(rp.x,rp.y,gR,gR*rp.scale,0,0,Math.PI*2);
+      lkX.fill();
+    }
+  }
+}
+
+// ─── Rain drops ───────────────────────────────────────────────────────────────
+let drops=[];
+function spawnDrop(strength, isBeat){
+  const yFrac=Math.random();
+  const yEnd=H*0.20+yFrac*H*0.68;
+  const xRange=0.08+yFrac*0.82;
+  const x=W*(0.5-xRange/2+Math.random()*xRange);
+  const angle=(Math.random()-0.5)*0.16;
+  drops.push({
+    x, y:Math.random()*H*0.25-55, yEnd, angle,
+    speed:5+Math.random()*5+strength*3+(1-yFrac)*2,
+    alpha:0.50+Math.random()*0.38,
+    len:26+Math.random()*28+strength*10+(isBeat?14:0),
+    width:0.7+Math.random()*0.55+(isBeat?0.4:0),
+    strength, teal:Math.random()>0.72,
+    isBeat: !!isBeat,
+  });
+}
+function drawDrops(){
+  dpX.clearRect(0,0,W,H);
+  for(let i=drops.length-1;i>=0;i--){
+    const d=drops[i];
+    d.x+=Math.sin(d.angle)*d.speed*0.28;
+    d.y+=d.speed;
+    if(d.y>=d.yEnd){spawnRipple(d.x,d.yEnd,d.strength,d.isBeat);drops.splice(i,1);continue;}
+
+    const x2=d.x-Math.sin(d.angle)*d.len, y2=d.y-d.len;
+    const lg=dpX.createLinearGradient(x2,y2,d.x,d.y);
+    if(d.teal){
+      lg.addColorStop(0,'rgba(55,195,200,0)');
+      lg.addColorStop(0.65,'rgba(90,215,215,0.13)');
+      lg.addColorStop(1,`rgba(175,245,245,${d.alpha*0.85})`);
+    } else {
+      lg.addColorStop(0,'rgba(190,232,255,0)');
+      lg.addColorStop(0.58,'rgba(210,240,255,0.10)');
+      lg.addColorStop(1,`rgba(235,250,255,${d.alpha})`);
+    }
+    dpX.beginPath(); dpX.moveTo(x2,y2); dpX.lineTo(d.x,d.y);
+    dpX.strokeStyle=lg; dpX.lineWidth=d.width; dpX.lineCap='round'; dpX.stroke();
+
+    // Glowing tip - brighter on beat
+    const tipA = d.isBeat ? d.alpha*1.4 : d.alpha;
+    const tg=dpX.createRadialGradient(d.x,d.y,0,d.x,d.y,4.5+d.strength);
+    tg.addColorStop(0,`rgba(240,252,255,${Math.min(1,tipA)})`);
+    tg.addColorStop(0.35,`rgba(140,215,255,${tipA*0.45})`);
+    tg.addColorStop(1,'rgba(70,170,255,0)');
+    dpX.fillStyle=tg; dpX.beginPath(); dpX.arc(d.x,d.y,4.5+d.strength+(d.isBeat?3:0),0,Math.PI*2); dpX.fill();
+  }
+}
+
+// ─── Natural water surface visualizer ────────────────────────────────────────
+// No bars/arcs — replaced by living light caustics, bloom, and sine-wave undulation
+let wvPhase=0, wvPhase2=0, bloomPulse=0;
+
+function drawWaterViz(freqData, energy, beat){
+  vsX.clearRect(0,0,W,H);
+  wvPhase  += 0.007+energy*0.022;
+  wvPhase2 += 0.004+energy*0.013;
+  if(beat) bloomPulse=1.0;
+  bloomPulse*=0.93;
+
+  const cx=W*0.5, cy=H*0.41;
+
+  // ── Central glow bloom ──────────────────────────────────────────────────────
+  const bR=160+energy*130+bloomPulse*90;
+  const bA=0.055+energy*0.075+bloomPulse*0.075;
+  const bg=vsX.createRadialGradient(cx,cy,0,cx,cy,bR);
+  bg.addColorStop(0,  `rgba(55,155,218,${bA})`);
+  bg.addColorStop(0.28,`rgba(25,100,175,${bA*0.55})`);
+  bg.addColorStop(0.68,`rgba( 8, 50,120,${bA*0.18})`);
+  bg.addColorStop(1,  'rgba(0,0,0,0)');
+  vsX.fillStyle=bg; vsX.fillRect(0,0,W,H);
+
+  // Teal-green offset bloom
+  const tB=vsX.createRadialGradient(cx+50,cy-25,0,cx+50,cy-25,100+energy*55);
+  tB.addColorStop(0,`rgba(15,145,158,${bA*0.5})`);
+  tB.addColorStop(1,'rgba(0,0,0,0)');
+  vsX.fillStyle=tB; vsX.fillRect(0,0,W,H);
+
+  // ── Water surface caustic wave lines ────────────────────────────────────────
+  const lakeTop=H*0.20, lakeBot=H*0.83, lakeH=lakeBot-lakeTop;
+  const ROWS=20;
+
+  for(let row=0;row<ROWS;row++){
+    const t=row/(ROWS-1);
+    const y0=lakeTop+t*lakeH;
+    const ys=yToScale(y0);
+
+    // Pick frequency band
+    if(!freqData){
+      // idle: gentle undulation only
+      const amp=(4+energy*8)*ys;
+      const freq=0.007+(1-t)*0.011;
+      const a=(0.025+energy*0.02)*(0.35+t*0.65);
+      vsX.beginPath();
+      for(let px=0;px<=W;px+=4){
+        const w=Math.sin(px*freq+wvPhase+t*3)*amp+Math.sin(px*freq*1.6+wvPhase2+t*2)*amp*0.38;
+        px===0?vsX.moveTo(px,y0+w):vsX.lineTo(px,y0+w);
+      }
+      vsX.strokeStyle=`rgba(50,140,200,${a})`; vsX.lineWidth=0.6+t*0.5; vsX.stroke();
+      continue;
+    }
+
+    const bin=Math.floor(t*freqData.length*0.38);
+    const fv=freqData[bin]/255;
+    const amp=(4+fv*20+energy*9)*ys;
+    const freq=0.007+(1-t)*0.012;
+    const a=(0.038+fv*0.085+energy*0.038)*(0.35+t*0.65);
+
+    // Color: cycle through dark-blue, mid-blue, teal, ice-blue
+    const cs=(row*73)%4;
+    let r,g,b;
+    if(cs===0){r=40; g=150;b=215;}
+    else if(cs===1){r=18;g=112;b=158;}
+    else if(cs===2){r=90;g=188;b=238;}
+    else{r=22;g=135;b=148;}
+
+    vsX.beginPath();
+    for(let px=0;px<=W;px+=3){
+      const w=Math.sin(px*freq+wvPhase+t*3.5)*amp+Math.sin(px*freq*1.65+wvPhase2+t*2.2)*amp*0.4;
+      px===0?vsX.moveTo(px,y0+w):vsX.lineTo(px,y0+w);
+    }
+    vsX.strokeStyle=`rgba(${r},${g},${b},${a})`;
+    vsX.lineWidth=0.7+t*0.6; vsX.stroke();
+
+    // Bright shimmer crest every 3rd row when energized
+    if(row%3===1&&fv>0.28){
+      vsX.beginPath();
+      for(let px=0;px<=W;px+=4){
+        const w=Math.sin(px*freq+wvPhase+t*3.5)*amp+Math.sin(px*freq*1.65+wvPhase2+t*2.2)*amp*0.4;
+        px===0?vsX.moveTo(px,y0+w-1.2):vsX.lineTo(px,y0+w-1.2);
+      }
+      vsX.strokeStyle=`rgba(205,242,255,${a*0.55})`; vsX.lineWidth=0.38; vsX.stroke();
+    }
+  }
+
+  // ── Floating caustic light patches ──────────────────────────────────────────
+  for(let p=0;p<6;p++){
+    const frac=(p+0.5)/6;
+    const bin=Math.floor(frac*((freqData?freqData.length:256)*0.45));
+    const fv=freqData?(freqData[bin]/255):0.1;
+    if(fv<0.12) continue;
+    const px=cx+Math.sin(wvPhase*0.38+p*2.05)*W*0.30;
+    const py=lakeTop+frac*lakeH*0.78+Math.cos(wvPhase*0.28+p)*lakeH*0.035;
+    const pr=28+fv*55; const pa=fv*0.065;
+    const ys=yToScale(py);
+    const pg=vsX.createRadialGradient(px,py,0,px,py,pr);
+    pg.addColorStop(0,`rgba(130,215,255,${pa})`); pg.addColorStop(1,'rgba(0,0,0,0)');
+    vsX.fillStyle=pg;
+    vsX.beginPath(); vsX.ellipse(px,py,pr,pr*ys,0,0,Math.PI*2); vsX.fill();
+  }
+
+  // ── Beat flash ──────────────────────────────────────────────────────────────
+  if(bloomPulse>0.38){
+    const fl=vsX.createRadialGradient(cx,cy,0,cx,cy,W*0.48);
+    fl.addColorStop(0,`rgba(90,195,255,${(bloomPulse-0.38)*0.045})`);
+    fl.addColorStop(1,'rgba(0,0,0,0)');
+    vsX.fillStyle=fl; vsX.fillRect(0,0,W,H);
+  }
+}
+
+// ─── Mist system ─────────────────────────────────────────────────────────────
+let mistParticles=[];
+function initMist(){
+  mistParticles=[];
+  for(let i=0;i<22;i++){
+    mistParticles.push(spawnMistParticle(true));
+  }
+}
+function spawnMistParticle(random){
+  const lakeY=H*0.38;
+  const y= random ? lakeY+Math.random()*(H*0.3) : lakeY+(H*0.25);
+  return {
+    x: Math.random()*W,
+    y,
+    vy: -0.08-Math.random()*0.12,
+    vx: (Math.random()-0.5)*0.15,
+    r: 60+Math.random()*120,
+    alpha: 0.025+Math.random()*0.045,
+    maxAlpha: 0.025+Math.random()*0.045,
+    phase: Math.random()*Math.PI*2,
+    speed: 0.002+Math.random()*0.003,
+    life:0, maxLife:800+Math.random()*600,
+  };
+}
+function drawMist(energy){
+  msX.clearRect(0,0,W,H);
+  const lakeY=H*0.38;
+  for(let i=mistParticles.length-1;i>=0;i--){
+    const m=mistParticles[i];
+    m.life++;
+    m.phase+=m.speed;
+    m.x+=m.vx+Math.sin(m.phase)*0.18;
+    m.y+=m.vy*(1+energy*0.5);
+    const lifeRatio=m.life/m.maxLife;
+    const fadeIn=Math.min(1,lifeRatio*6);
+    const fadeOut=Math.max(0,1-Math.pow((lifeRatio-0.6)/0.4,2));
+    const a=m.maxAlpha*fadeIn*fadeOut*(1+energy*0.6);
+
+    if(m.life>=m.maxLife){mistParticles.splice(i,1); mistParticles.push(spawnMistParticle(false)); continue;}
+
+    const mg=msX.createRadialGradient(m.x,m.y,0,m.x,m.y,m.r);
+    // Soft blue-white mist tinted with lake color
+    const lc=LAKE_COLORS[Math.floor(lakeColorPhase)%LAKE_COLORS.length];
+    const mr=lc[0]*0.3+120, mg2=lc[1]*0.3+145, mb=lc[2]*0.3+165;
+    mg.addColorStop(0,  `rgba(${mr|0},${mg2|0},${mb|0},${a})`);
+    mg.addColorStop(0.55,`rgba(${mr|0},${mg2|0},${mb|0},${a*0.3})`);
+    mg.addColorStop(1,  'rgba(0,0,0,0)');
+    msX.fillStyle=mg;
+    msX.beginPath(); msX.ellipse(m.x,m.y,m.r,m.r*0.32,0,0,Math.PI*2); msX.fill();
+  }
+  // Always maintain count
+  while(mistParticles.length<22) mistParticles.push(spawnMistParticle(false));
+}
+
+// ─── Fireflies system ────────────────────────────────────────────────────────
+let fireflies=[];
+function initFireflies(){
+  fireflies=[];
+  for(let i=0;i<28;i++) fireflies.push(spawnFirefly(true));
+}
+function spawnFirefly(random){
+  const lakeTop=H*0.25, lakeBot=H*0.85;
+  return {
+    x: Math.random()*W,
+    y: random ? lakeTop+Math.random()*(lakeBot-lakeTop) : lakeTop+Math.random()*(lakeBot-lakeTop)*0.5,
+    vx: (Math.random()-0.5)*0.35,
+    vy: (Math.random()-0.5)*0.22,
+    phase: Math.random()*Math.PI*2,
+    glowPhase: Math.random()*Math.PI*2,
+    speed: 0.012+Math.random()*0.025,
+    glowSpeed: 0.015+Math.random()*0.04,
+    r: 1.2+Math.random()*1.8,
+    maxGlow: 6+Math.random()*12,
+    life:0, maxLife: 1200+Math.random()*1800,
+    // Color: warm yellow-green to cool blue-green
+    hue: Math.random()<0.6 ? 'warm' : 'cool',
+    wanderAngle: Math.random()*Math.PI*2,
+    wanderSpeed: 0.008+Math.random()*0.012,
+  };
+}
+function drawFireflies(energy, beat){
+  ffX.clearRect(0,0,W,H);
+  for(let i=fireflies.length-1;i>=0;i--){
+    const f=fireflies[i];
+    f.life++;
+    f.phase+=f.speed;
+    f.glowPhase+=f.glowSpeed*(1+energy*0.8);
+    // Gentle wander
+    f.wanderAngle+=f.wanderSpeed*(Math.random()-0.48);
+    f.vx=f.vx*0.97+Math.cos(f.wanderAngle)*0.012;
+    f.vy=f.vy*0.97+Math.sin(f.wanderAngle)*0.006;
+    f.x+=f.vx; f.y+=f.vy;
+    // Wrap around
+    if(f.x<-20)f.x=W+20; if(f.x>W+20)f.x=-20;
+    if(f.y<H*0.1)f.vy+=0.02; if(f.y>H*0.9)f.vy-=0.02;
+
+    if(f.life>=f.maxLife){fireflies.splice(i,1); fireflies.push(spawnFirefly(false)); continue;}
+
+    const lifeRatio=f.life/f.maxLife;
+    const fadeIn=Math.min(1,lifeRatio*8);
+    const fadeOut=Math.max(0,1-lifeRatio*3);
+    // Glow pulses with music
+    const glowAnim=Math.sin(f.glowPhase)*0.5+0.5;
+    const beatBoost=beat?1.8:1.0;
+    const glowA=(0.55+glowAnim*0.45)*fadeIn*fadeOut*beatBoost*(0.7+energy*0.5);
+
+    const glowR=f.maxGlow*(0.5+glowAnim*0.5)*(1+energy*0.3)*beatBoost;
+
+    let r1,g1,b1,r2,g2,b2;
+    if(f.hue==='warm'){
+      // Yellow-green warm firefly
+      r1=180+glowAnim*50; g1=240; b1=80+glowAnim*40;
+      r2=120; g2=200; b2=30;
+    } else {
+      // Blue-green cool firefly
+      r1=80+glowAnim*30; g1=220; b1=200+glowAnim*55;
+      r2=30; g2=160; b2=180;
+    }
+
+    // Outer glow
+    const fg=ffX.createRadialGradient(f.x,f.y,0,f.x,f.y,glowR);
+    fg.addColorStop(0,  `rgba(${r1|0},${g1|0},${b1|0},${glowA*0.7})`);
+    fg.addColorStop(0.4,`rgba(${r2|0},${g2|0},${b2|0},${glowA*0.25})`);
+    fg.addColorStop(1,  'rgba(0,0,0,0)');
+    ffX.fillStyle=fg; ffX.beginPath(); ffX.arc(f.x,f.y,glowR,0,Math.PI*2); ffX.fill();
+
+    // Core dot
+    ffX.beginPath(); ffX.arc(f.x,f.y,f.r*(0.8+glowAnim*0.5),0,Math.PI*2);
+    ffX.fillStyle=`rgba(${r1|0},${g1|0},${b1|0},${Math.min(1,glowA*1.3)})`;
+    ffX.fill();
+  }
+  while(fireflies.length<28) fireflies.push(spawnFirefly(false));
+}
+
+// ─── Audio ────────────────────────────────────────────────────────────────────
+let audioCtx,analyser,source,audioEl,dataArray,freqData;
+let isPlaying=false,isMounted=false,beatCooldown=0,lastBassAvg=0,globalEnergy=0;
+let midBeatCooldown=0, lastMidAvg=0;
+let rhythmAccumulator=0, bassHistory=new Float32Array(8), bassHistIdx=0;
+
+function setupAnalyser(node){
+  analyser=audioCtx.createAnalyser(); analyser.fftSize=2048; analyser.smoothingTimeConstant=0.80;
+  dataArray=new Uint8Array(analyser.frequencyBinCount); freqData=new Uint8Array(analyser.frequencyBinCount);
+  node.connect(analyser); analyser.connect(audioCtx.destination);
+}
+function loadFile(file){
+  document.getElementById('track-name').textContent=file.name;
+  if(audioEl){audioEl.pause();audioEl.src='';}
+  audioEl=new Audio(); audioEl.src=URL.createObjectURL(file); audioEl.crossOrigin='anonymous';
+  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  source=audioCtx.createMediaElementSource(audioEl); setupAnalyser(source);
+  document.getElementById('upload-zone').classList.add('hidden');
+  document.getElementById('play-btn').textContent='▷ Play';
+  isPlaying=false; isMounted=true;
+  audioEl.ontimeupdate=()=>{ if(!audioEl.duration)return; document.getElementById('progress-fill').style.width=(audioEl.currentTime/audioEl.duration*100)+'%'; };
+  audioEl.onended=()=>{ isPlaying=false; document.getElementById('play-btn').textContent='▷ Play'; };
+}
+document.getElementById('file-input').addEventListener('change',e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
+document.getElementById('upload-zone').addEventListener('dragover',e=>e.preventDefault());
+document.getElementById('upload-zone').addEventListener('drop',e=>{e.preventDefault();if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);});
+document.getElementById('play-btn').addEventListener('click',()=>{
+  if(!isMounted)return;
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  if(isPlaying){audioEl.pause();isPlaying=false;document.getElementById('play-btn').textContent='▷ Play';}
+  else{audioEl.play();isPlaying=true;document.getElementById('play-btn').textContent='⏸ Pause';}
+});
+document.getElementById('restart-btn').addEventListener('click',()=>{
+  if(!audioEl)return; audioEl.currentTime=0;
+  if(!isPlaying&&isMounted){audioEl.play();isPlaying=true;document.getElementById('play-btn').textContent='⏸ Pause';if(audioCtx.state==='suspended')audioCtx.resume();}
+});
+document.getElementById('upload-btn').addEventListener('click',()=>{
+  if(audioEl){audioEl.pause();isPlaying=false;document.getElementById('play-btn').textContent='▷ Play';}
+  document.getElementById('upload-zone').classList.remove('hidden');
+  document.getElementById('file-input').click();
+});
+document.getElementById('progress-wrap').addEventListener('click',e=>{
+  if(!audioEl||!audioEl.duration)return;
+  const rect=e.currentTarget.getBoundingClientRect();
+  audioEl.currentTime=((e.clientX-rect.left)/rect.width)*audioEl.duration;
+});
+
+// ─── Main loop ────────────────────────────────────────────────────────────────
+let frame=0;
+function loop(){
+  requestAnimationFrame(loop); frame++;
+  beatCooldown=Math.max(0,beatCooldown-1);
+  midBeatCooldown=Math.max(0,midBeatCooldown-1);
+  let beat=false; let curFreq=null;
+
+  if(analyser&&isPlaying){
+    analyser.getByteFrequencyData(freqData); analyser.getByteTimeDomainData(dataArray);
+    curFreq=freqData;
+
+    // Bass (kick drum range: bins 0-5 ~20-120Hz)
+    let bass=0; for(let i=0;i<6;i++) bass+=freqData[i]; bass/=6;
+    // Low-mid (snare/clap range: bins 6-24)
+    let lowMid=0; for(let i=6;i<24;i++) lowMid+=freqData[i]; lowMid/=18;
+    // Mid  
+    let mid=0; for(let i=6;i<50;i++) mid+=freqData[i]; mid/=44;
+    // Overall
+    let ovr=0; for(let i=0;i<100;i++) ovr+=freqData[i]; ovr/=100;
+    globalEnergy=globalEnergy*0.85+(ovr/255)*0.15;
+
+    // Maintain rolling bass history for dynamic threshold
+    bassHistory[bassHistIdx%8]=bass; bassHistIdx++;
+    let bassRollingAvg=0; for(let v of bassHistory) bassRollingAvg+=v; bassRollingAvg/=8;
+
+    // Beat detection: bass spike above rolling average
+    const beatThreshold=Math.max(1.22, 1.38-globalEnergy*0.18);
+    if(bass>bassRollingAvg*beatThreshold&&bass>95&&beatCooldown===0){
+      beat=true; beatCooldown=8;
+      // Spawn 2-4 beat drops in a tight cluster
+      const numDrops=2+Math.floor((bass/255)*3);
+      for(let d=0;d<numDrops;d++) spawnDrop((bass/255)*2.4+Math.random()*0.3, true);
+      // Extra non-beat drops on strong beats
+      if(bass>165) spawnDrop((bass/255)*1.6, false);
+      document.getElementById('energy-val').textContent=Math.round(ovr);
+    }
+    lastBassAvg=lastBassAvg*0.9+bass*0.1;
+
+    // Mid-beat (snare) detection for lighter drops
+    if(lowMid>lastMidAvg*1.28&&lowMid>80&&midBeatCooldown===0){
+      midBeatCooldown=6;
+      spawnDrop(lowMid/255*1.5, false);
+      if(lowMid>140) spawnDrop(lowMid/255*1.0, false);
+    }
+    lastMidAvg=lastMidAvg*0.88+lowMid*0.12;
+
+    // Rhythm-driven ambient drops (synced to energy, not just frame count)
+    rhythmAccumulator+=globalEnergy*0.8+0.15;
+    if(rhythmAccumulator>=1.0){
+      rhythmAccumulator-=1.0;
+      spawnDrop(mid/255*1.3, false);
+    }
+  } else {
+    if(frame%48===0) spawnDrop(0.28, false);
+    globalEnergy*=0.97;
+  }
+
+  if(Math.random()<(isPlaying?0.006:0.010)) spawnDrop(0.18+Math.random()*0.22, false);
+
+  drawStars(beat,globalEnergy);
+  drawLake();
+  drawDrops();
+  drawMist(globalEnergy);
+  drawFireflies(globalEnergy, beat);
+  drawWaterViz(curFreq,globalEnergy,beat);
+}
+
+resize(); initMist(); loop();
+for(let i=0;i<10;i++) setTimeout(()=>spawnDrop(0.22+Math.random()*0.38, false),i*520);
+</script>
+</body>
+</html>
