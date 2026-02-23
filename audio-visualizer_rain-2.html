@@ -92,7 +92,7 @@
     </div>
   </div>
 
-  <div id="upload-zone" class="hidden">
+  <div id="upload-zone">
     <div class="upload-inner">
       <div class="ripple-icon">
         <svg viewBox="0 0 130 60" xmlns="http://www.w3.org/2000/svg">
@@ -116,7 +116,7 @@
       <button class="btn primary" id="play-btn">▷ Play</button>
       <button class="btn" id="upload-btn">⊕ New Track</button>
     </div>
-    <div class="track-name" id="track-name">No track loaded</div>
+    <div class="track-name" id="track-name">Default Ambience (Press Play)</div>
   </div>
 </div>
 
@@ -638,72 +638,102 @@ function drawFireflies(energy, beat){
 
 // ─── Audio ────────────────────────────────────────────────────────────────────
 let audioCtx,analyser,source,audioEl,dataArray,freqData;
-let isPlaying=false,isMounted=false,beatCooldown=0,lastBassAvg=0,globalEnergy=0;
+let isPlaying = false, isInitialized = false;
+let beatCooldown=0,lastBassAvg=0,globalEnergy=0;
 let midBeatCooldown=0, lastMidAvg=0;
 let rhythmAccumulator=0, bassHistory=new Float32Array(8), bassHistIdx=0;
 
-function setupAnalyser(node){
-  analyser=audioCtx.createAnalyser(); analyser.fftSize=2048; analyser.smoothingTimeConstant=0.80;
-  dataArray=new Uint8Array(analyser.frequencyBinCount); freqData=new Uint8Array(analyser.frequencyBinCount);
-  node.connect(analyser); analyser.connect(audioCtx.destination);
-}
-function loadFile(file){
-  document.getElementById('track-name').textContent=file.name;
-  if(audioEl){audioEl.pause();audioEl.src='';}
-  audioEl=new Audio(); audioEl.src=URL.createObjectURL(file); audioEl.crossOrigin='anonymous';
-  audioEl.loop = false; // User tracks should not loop
-  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-  if (source) source.disconnect();
-  source=audioCtx.createMediaElementSource(audioEl); setupAnalyser(source);
-  document.getElementById('upload-zone').classList.add('hidden');
-  document.getElementById('play-btn').textContent='▷ Play';
-  isPlaying=false; isMounted=true;
-  audioEl.ontimeupdate=()=>{ if(!audioEl.duration)return; document.getElementById('progress-fill').style.width=(audioEl.currentTime/audioEl.duration*100)+'%'; };
-  audioEl.onended=()=>{ isPlaying=false; document.getElementById('play-btn').textContent='▷ Play'; };
-}
-function initDefaultTrack() {
+function initAudio() {
+  if (isInitialized) return;
+
   const defaultTrackPath = 'homepage2.mp4';
-  document.getElementById('track-name').textContent = 'Default Ambience (Press Play)';
-  if (audioEl) { audioEl.pause(); audioEl.src=''; }
+  document.getElementById('track-name').textContent = 'Default Ambience';
+  
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  
   audioEl = new Audio();
   audioEl.src = defaultTrackPath;
   audioEl.crossOrigin = 'anonymous';
   audioEl.loop = true;
 
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (source) source.disconnect();
   source = audioCtx.createMediaElementSource(audioEl);
-  setupAnalyser(source);
+  
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 2048;
+  analyser.smoothingTimeConstant = 0.80;
+  
+  dataArray = new Uint8Array(analyser.frequencyBinCount);
+  freqData = new Uint8Array(analyser.frequencyBinCount);
+
+  source.connect(analyser);
+  analyser.connect(audioCtx.destination);
 
   document.getElementById('upload-zone').classList.add('hidden');
-  isMounted = true;
-  isPlaying = false;
-  document.getElementById('play-btn').textContent = '▷ Play';
   
   audioEl.ontimeupdate = () => { document.getElementById('progress-fill').style.width = '0%'; };
   audioEl.onended = () => {};
+
+  isInitialized = true;
 }
+
+function loadFile(file){
+  if (!isInitialized) initAudio();
+
+  document.getElementById('track-name').textContent = file.name;
+  audioEl.pause();
+  audioEl.src = URL.createObjectURL(file);
+  audioEl.loop = false;
+  
+  document.getElementById('upload-zone').classList.add('hidden');
+  document.getElementById('play-btn').textContent = '▷ Play';
+  isPlaying = false;
+  
+  audioEl.ontimeupdate=()=>{ if(!audioEl.duration)return; document.getElementById('progress-fill').style.width=(audioEl.currentTime/audioEl.duration*100)+'%'; };
+  audioEl.onended=()=>{ isPlaying=false; document.getElementById('play-btn').textContent='▷ Play'; };
+}
+
 document.getElementById('file-input').addEventListener('change',e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
 document.getElementById('upload-zone').addEventListener('dragover',e=>e.preventDefault());
 document.getElementById('upload-zone').addEventListener('drop',e=>{e.preventDefault();if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);});
-document.getElementById('play-btn').addEventListener('click',()=>{
-  if(!isMounted)return;
-  if(audioCtx.state==='suspended')audioCtx.resume();
-  if(isPlaying){audioEl.pause();isPlaying=false;document.getElementById('play-btn').textContent='▷ Play';}
-  else{audioEl.play();isPlaying=true;document.getElementById('play-btn').textContent='⏸ Pause';}
+
+document.getElementById('play-btn').addEventListener('click',()=> {
+  if (!isInitialized) initAudio();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
+  if (isPlaying) {
+    audioEl.pause();
+    document.getElementById('play-btn').textContent = '▷ Play';
+  } else {
+    audioEl.play();
+    document.getElementById('play-btn').textContent = '⏸ Pause';
+  }
+  isPlaying = !isPlaying;
 });
-document.getElementById('restart-btn').addEventListener('click',()=>{
-  if(!audioEl)return; audioEl.currentTime=0;
-  if(!isPlaying&&isMounted){audioEl.play();isPlaying=true;document.getElementById('play-btn').textContent='⏸ Pause';if(audioCtx.state==='suspended')audioCtx.resume();}
+
+document.getElementById('restart-btn').addEventListener('click',()=> {
+  if (!audioEl) return;
+  audioEl.currentTime = 0;
+  if (!isPlaying && isInitialized) {
+     if (audioCtx.state === 'suspended') audioCtx.resume();
+     audioEl.play();
+     isPlaying = true;
+     document.getElementById('play-btn').textContent = '⏸ Pause';
+  }
 });
-document.getElementById('upload-btn').addEventListener('click',()=>{
-  if(audioEl){audioEl.pause();isPlaying=false;document.getElementById('play-btn').textContent='▷ Play';}
+
+document.getElementById('upload-btn').addEventListener('click',()=> {
+  if (audioEl) {
+    audioEl.pause();
+    isPlaying = false;
+    document.getElementById('play-btn').textContent = '▷ Play';
+  }
   document.getElementById('upload-zone').classList.remove('hidden');
 });
-document.getElementById('progress-wrap').addEventListener('click',e=>{
-  if(!audioEl||!audioEl.duration||audioEl.loop)return;
-  const rect=e.currentTarget.getBoundingClientRect();
-  audioEl.currentTime=((e.clientX-rect.left)/rect.width)*audioEl.duration;
+
+document.getElementById('progress-wrap').addEventListener('click', e => {
+  if (!audioEl || !audioEl.duration || audioEl.loop) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  audioEl.currentTime = ((e.clientX-rect.left) / rect.width) * audioEl.duration;
 });
 
 // ─── Main loop ────────────────────────────────────────────────────────────────
@@ -775,7 +805,6 @@ function loop(){
 }
 
 resize(); 
-initDefaultTrack();
 loop();
 for(let i=0;i<10;i++) setTimeout(()=>spawnDrop(0.22+Math.random()*0.38, false),i*520);
 </script>
