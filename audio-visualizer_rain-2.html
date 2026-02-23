@@ -92,7 +92,7 @@
     </div>
   </div>
 
-  <div id="upload-zone">
+  <div id="upload-zone" class="hidden">
     <div class="upload-inner">
       <div class="ripple-icon">
         <svg viewBox="0 0 130 60" xmlns="http://www.w3.org/2000/svg">
@@ -651,13 +651,37 @@ function loadFile(file){
   document.getElementById('track-name').textContent=file.name;
   if(audioEl){audioEl.pause();audioEl.src='';}
   audioEl=new Audio(); audioEl.src=URL.createObjectURL(file); audioEl.crossOrigin='anonymous';
+  audioEl.loop = false; // User tracks should not loop
   if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  if (source) source.disconnect();
   source=audioCtx.createMediaElementSource(audioEl); setupAnalyser(source);
   document.getElementById('upload-zone').classList.add('hidden');
   document.getElementById('play-btn').textContent='▷ Play';
   isPlaying=false; isMounted=true;
   audioEl.ontimeupdate=()=>{ if(!audioEl.duration)return; document.getElementById('progress-fill').style.width=(audioEl.currentTime/audioEl.duration*100)+'%'; };
   audioEl.onended=()=>{ isPlaying=false; document.getElementById('play-btn').textContent='▷ Play'; };
+}
+function initDefaultTrack() {
+  const defaultTrackPath = 'homepage2.mp4';
+  document.getElementById('track-name').textContent = 'Default Ambience (Press Play)';
+  if (audioEl) { audioEl.pause(); audioEl.src=''; }
+  audioEl = new Audio();
+  audioEl.src = defaultTrackPath;
+  audioEl.crossOrigin = 'anonymous';
+  audioEl.loop = true;
+
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (source) source.disconnect();
+  source = audioCtx.createMediaElementSource(audioEl);
+  setupAnalyser(source);
+
+  document.getElementById('upload-zone').classList.add('hidden');
+  isMounted = true;
+  isPlaying = false;
+  document.getElementById('play-btn').textContent = '▷ Play';
+  
+  audioEl.ontimeupdate = () => { document.getElementById('progress-fill').style.width = '0%'; };
+  audioEl.onended = () => {};
 }
 document.getElementById('file-input').addEventListener('change',e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
 document.getElementById('upload-zone').addEventListener('dragover',e=>e.preventDefault());
@@ -675,10 +699,9 @@ document.getElementById('restart-btn').addEventListener('click',()=>{
 document.getElementById('upload-btn').addEventListener('click',()=>{
   if(audioEl){audioEl.pause();isPlaying=false;document.getElementById('play-btn').textContent='▷ Play';}
   document.getElementById('upload-zone').classList.remove('hidden');
-  document.getElementById('file-input').click();
 });
 document.getElementById('progress-wrap').addEventListener('click',e=>{
-  if(!audioEl||!audioEl.duration)return;
+  if(!audioEl||!audioEl.duration||audioEl.loop)return;
   const rect=e.currentTarget.getBoundingClientRect();
   audioEl.currentTime=((e.clientX-rect.left)/rect.width)*audioEl.duration;
 });
@@ -751,7 +774,9 @@ function loop(){
   drawWaterViz(curFreq,globalEnergy,beat);
 }
 
-resize(); initMist(); loop();
+resize(); 
+initDefaultTrack();
+loop();
 for(let i=0;i<10;i++) setTimeout(()=>spawnDrop(0.22+Math.random()*0.38, false),i*520);
 </script>
 </body>
